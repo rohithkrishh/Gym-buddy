@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Centered Signup Page</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+  <div class="signup-wrapper">
+    <!-- Signup Card -->
+    <div class="signup-card">
+      <!-- Form Section -->
+      <div class="form-section">
+        <h1>Sign Up</h1>
+        <form id="signform" method="post" action="/signup">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" name="name" placeholder="Enter Name" required>
+          <!-- <div id="error1" class="error.message"></div> -->
+
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="Enter Email" required>
+<!-- <div id="error2" class="error.message"></div> -->
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="Enter Phone Number" required>
+<!-- <div id="error3" class="error.message"></div> -->
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Password" required>
+<!-- <div id="error4" class="error.message"></div> -->
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm Password" required>
+<!-- <div id="error5" class="error.message"></div> -->
+          <button type="submit">Sign Up</button>
+        </form>
+
+        <!-- Google Signup -->
+        <div class="google-signup">
+          <span>or sign up with</span>
+          <button onclick="googleSignup()">
+            <img src="google-icon.png" alt="Google Icon">
+          </button>
+        </div>
+
+        <!-- Already Registered -->
+        <p>Already registered? <a href="#">Log in</a></p>
+      </div>
+
+      <!-- Image Section -->
+      <div class="image-section">
+        <h2>Gym Equipment</h2>
+        <img src="/assets/imgs/page/dumbal image.jpg" alt="Gym Equipment">
+      </div>
+    </div>
+  </div>
+
+  <!-- <script src="script.js"></script> -->
+</body>
+</html>
+
+
+<script>
+
+const nameid=document.getElementById("name")
+const emailid=document.getElementById("email")
+const phoneid=document.getElementById("phone")
+const passid=document.getElementById("password")
+const cpassid=document.getElementById("confirmPassword")
+const error1=document.getElementById("error1")
+const error2=document.getElementById("error2")
+const error3=document.getElementById("error3")
+const error4=document.getElementById("error4")
+const error5=document.getElementById("error5")
+const signform=document.getElementById("signform")
+
+
+document.addEventListener("DOMcontentLoaded",function(){
+signform.addEventListener("submit",function(e){
+
+  namevalidateChecking();
+  emailvalidateChecking();
+  phonevalidateChecking();
+  passvalidateChecking();
+
+  if(!nameid||!emailid
+
+
+  
+  )
+
+
+})
+
+})
+
+
+</script>
+
+
+
+
+
+
+
+<script>
+
+  document.getElementById("otp").focus();
+  
+  let timer = 60; // Declare timer variable
+  let timerInterval;
+  
+  function startTimer() {
+      clearInterval(timerInterval); // Clear any existing interval
+      timer = 60; // Reset timer to 60 seconds
+  
+      document.getElementById("timerValue").textContent = timer; // Reset the timer display
+      document.getElementById("timerValue").classList.remove("expired"); // Remove expired styling
+      document.getElementById("otp").disabled = false; // Enable OTP input
+  
+      timerInterval = setInterval(() => {
+          timer--;
+          document.getElementById("timerValue").textContent = timer;
+  
+          if (timer <= 0) {
+              clearInterval(timerInterval);
+              document.getElementById("timerValue").classList.add("expired");
+              document.getElementById("timerValue").textContent = "Expired";
+              document.getElementById("otp").disabled = true; // Disable OTP input
+          }
+      }, 1000);
+  }
+  
+  // Start the timer on page load
+  startTimer();
+  
+  function validateOTPForm(event) {
+      event.preventDefault(); // Prevent form submission
+  
+      const otpInput = document.getElementById("otp").value;
+  
+      $.ajax({
+          type: "POST",
+          url: "verify-otp",
+          data: { otp: otpInput },
+          success: function (response) {
+              if (response.success) {
+                  Swal.fire({
+                      icon: "success",
+                      title: "OTP verified successfully",
+                      showConfirmButton: false,
+                      timer: 1500,
+                  }).then(() => {
+                      window.location.href = response.redirectUrl;
+                  });
+              } else {
+                  Swal.fire({
+                      icon: "error",
+                      title: "Error",
+                      text: response.message,
+                  });
+              }
+          },
+          error: function () {
+              Swal.fire({
+                  icon: "error",
+                  title: "Invalid OTP",
+                  text: "Please try again",
+              });
+          },
+      });
+  
+      return false; // Prevent further form submission
+  }
+  
+  function resendOTP() {
+      clearInterval(timerInterval); // Clear any existing timer
+      timer = 60; // Reset the timer
+      document.getElementById("otp").disabled = false; // Enable OTP input
+      document.getElementById("timerValue").classList.remove("expired"); // Remove expired styling
+  
+      startTimer(); // Restart the timer
+  
+      $.ajax({
+          type: "POST",
+          url: "/resend-otp",
+          success: function (response) {
+              if (response.success) {
+                  Swal.fire({
+                      icon: "success",
+                      title: "OTP Resent Successfully",
+                      showConfirmButton: false,
+                      timer: 1500,
+                  });
+              } else {
+                  Swal.fire({
+                      icon: "error",
+                      title: "Error",
+                      text: "An error occurred while resending OTP. Please try again.",
+                  });
+              }
+          },
+          error: function () {
+              Swal.fire({
+                  icon: "error",
+                  title: "Error",
+                  text: "Failed to resend OTP. Please try again.",
+              });
+          },
+      });
+  
+      return false; // Prevent default form submission
+  }
+  
+  </script>

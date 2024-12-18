@@ -25,27 +25,48 @@ User.findById(req.session.user)
 }
 
 
+// const adminAuth = async (req, res, next) => {
+//   try {
+//     console.log('user :',req.session.user);
+//     console.log('admin :',req.session.admin);
+//     console.log('isAdmin :',req.session.isAdmin);
+
+//     // Check if user session exists and is an admin
+//     const userId = req.session.admin; // Assuming `req.session.user` contains the user's ID
+//     //const isAdmin = req.session.isAdmin; // Assuming `req.session.isAdmin` is set during login
+
+//     if (userId ) {
+//       return next(); // User is authenticated and an admin
+//     }
+
+//     // Redirect to login if user is not an admin
+//     return res.redirect("/admin/login");
+//   } catch (error) {
+//     console.error("Error in adminAuth middleware:", error);
+//     return res.redirect("/admin/pageerror"); // Redirect to a generic error page on error
+//   }
+// };
+
 const adminAuth = async (req, res, next) => {
   try {
-    console.log('user :',req.session.user);
-    console.log('admin :',req.session.admin);
-    console.log('isAdmin :',req.session.isAdmin);
+    // Debugging session details
+    console.log("user :", req.session?.user); // Null-safe access
+    console.log("admin :", req.session?.admin);
+    console.log("isAdmin :", req.session?.isAdmin);
 
-    // Check if user session exists and is an admin
-    const userId = req.session.admin; // Assuming `req.session.user` contains the user's ID
-    //const isAdmin = req.session.isAdmin; // Assuming `req.session.isAdmin` is set during login
-
-    if (userId ) {
-      return next(); // User is authenticated and an admin
+    // Check if session exists and user is an admin
+    if (req.session && req.session.admin) {
+      return next(); // Admin is authenticated
     }
 
-    // Redirect to login if user is not an admin
+    // Redirect to login if not authenticated as admin
     return res.redirect("/admin/login");
   } catch (error) {
-    console.error("Error in adminAuth middleware:", error);
-    return res.redirect("/admin/pageerror"); // Redirect to a generic error page on error
+    console.error("Error in adminAuth middleware:", error.message, error.stack);
+    return res.redirect("/admin/pageerror"); // Redirect to error page on unexpected issues
   }
 };
+
 
   
 

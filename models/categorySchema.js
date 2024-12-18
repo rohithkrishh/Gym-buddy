@@ -8,7 +8,7 @@ const categorySchema=new mongoose.Schema({
         required:true,
         unique:true
     },
-    discription:{
+    description:{
         type:String,
         required:true
     },
@@ -26,5 +26,5 @@ const categorySchema=new mongoose.Schema({
     }
 })
 
-const Category=mongoose.model("category",categorySchema);
+const Category=mongoose.model("Category",categorySchema);
 module.exports=Category;

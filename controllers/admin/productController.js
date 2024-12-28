@@ -257,198 +257,66 @@ const getEditProduct = async (req, res) => {
     }
 };
 
-// const updateProduct = async (req, res) => {
-//     try {
-//         const id = req.params.id.replace(/^id=/, "");
-//         console.log("Extracted Product ID:", id);
 
-//         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-//             return res.status(400).json({ error: "Invalid Product ID format" });
-//         }
-
-//         const product = await Product.findOne({ _id: id });
-//         if (!product) {
-//             return res.status(404).json({ error: "Product not found" });
-//         }
-
-//         const data = req.body;
-//         console.log("Request body data:", data);
-
-//         const existingProduct = await Product.findOne({
-//             productName: data.productName,
-//             _id: { $ne: id },
-//         });
-//         if (existingProduct) {
-//             return res.status(400).json({
-//                 error: "Product already exists. Please try again with another name.",
-//             });
-//         }
-
-//         const image = [];
-//         if (req.files && req.files.length > 0) {
-//             for (let i = 0; i < req.files.length; i++) {
-//                 image.push(req.files[i].filename);
-//             }
-//         }
-
-//         const updateFields = {
-//             productName: data.productName,
-//             description: data.description,
-//             brand: data.brand,
-//             category: product.category,
-//             regularPrice: data.regularPrice,
-//             salePrice: data.salePrice,
-//             quantity: data.quantity,
-            
-//         };
-
-//         if (image.length > 0) {
-//             updateFields.$push = { productImage: { $each: image } };
-//         }
-
-//         console.log("Update fields:", updateFields);
-
-//         await Product.findByIdAndUpdate(id, updateFields, { new: true });
-
-//         console.log("Product updated successfully");
-//         res.redirect("/admin/products");
-//     } catch (error) {
-//         console.error("Error updating product:", error);
-//         res.redirect("/pagenotfound");
-//     }
-// };
-
-
-// const updateProduct=async (req,res)=>{
-//         try {
-//             const id = req.params.id;
-//             console.log("id",id)
-//             const product = await Product.findOne({_id:id});
-//             console.log("product")
+const editProduct=async (req,res)=>{
+        try {
+            const id = req.params.id;
+            console.log("id",id)
+            const product = await Product.findOne({_id:id});
+            console.log("product")
     
-//             const data = req.body;
-//             console.log(data)
-//             const existingProduct= await Product.findOne({
-//                 productName:data.productName,
-//                 _id:{$ne:id}
-//             })
-//             console.log(existingProduct)
+            const data = req.body;
+            console.log(data)
+            const existingProduct= await Product.findOne({
+                productName:data.productName,
+                _id:{$ne:id}
+            })
+            console.log(existingProduct)
     
-//             if(existingProduct){
-//                 return res.status(400).json({error:"Product is allready exist, Please try again with another name "})
-//             }
+            if(existingProduct){
+                return res.status(400).json({error:"Product is allready exist, Please try again with another name "})
+            }
     
-//             console.log("exist")
+            console.log("exist")
     
-//             const image=[];
-//             console.log("image")
+            const image=[];
+            console.log("image")
     
-//             if(req.files && req.files.length>0){
-//                 for(let i=0;i<req.files.length;i++){
-//                     image.push(req.files[i].filename)
-//                 }
+            if(req.files && req.files.length>0){
+                for(let i=0;i<req.files.length;i++){
+                    image.push(req.files[i].filename)
+                }
     
-//             }
+            }
     
-//             const updateFields={
-//                 productName:data.productName,
-//                 description:data.description,
-//                 brand:data.brand,
-//                 category:product.category,
-//                 regularPrice:product.regularPrice,
-//                 salePrice:data.salePrice,
-//                 quantity:data.quantity,
-//                 size:data.size,
-//                 color:data.color
-//             }
-//             console.log("hai")
-//             if(req.files.length>0){
-//                 updateFields.$push={productImage:{$each:image}}
-//             }
-//             console.log("hello")
-//             await Product.findByIdAndUpdate(id,updateFields,{new:true});
-//             res.redirect('/admin/products')
-    
-//         } catch (error) {
-//             // console.error(error);
-//             res.redirect('/pagenotfound')
-    
-//         }
-//     }
+            const updateFields={
+                productName:data.productName,
+                description:data.description,
+                brand:data.brand,
+                category:product.category,
+                regularPrice:product.regularPrice,
+                salePrice:data.salePrice,
+                quantity:data.quantity,
+                  
+            }
 
-const updateProduct = async (req, res) => {
-    try {
-      const id = req.params.id;
-      console.log("Product ID:", id);
-  
-      // Find the product by ID
-      const product = await Product.findById(id);
-      if (!product) {
-        return res.status(404).json({ error: "Product not found" });
-      }
-  
-      const data = req.body;
-      console.log("Request Data:", data);
-  
-      // Check if another product with the same name exists (excluding the current product)
-      const existingProduct = await Product.findOne({
-        productName: data.productName,
-        _id: { $ne: id },
-      });
-  
-      if (existingProduct) {
-        return res
-          .status(400)
-          .json({ error: "Product already exists. Please try with another name." });
-      }
-  
-      console.log("No existing product with the same name found.");
-  
-      // Handle product images
-      const images = [];
-      if (req.files && req.files.length > 0) {
-        for (let i = 0; i < req.files.length; i++) {
-          images.push(req.files[i].filename);
+           
+            console.log("hai")
+            if(req.files.length>0){
+                updateFields.$push={productImages:{$each:image}}
+            }
+            console.log("hello")
+            await Product.findByIdAndUpdate(id,updateFields,{new:true});
+            res.redirect('/admin/products')
+    
+        } catch (error) {
+            // console.error(error);
+            res.redirect('/pagenotfound')
+    
         }
-      }
-  
-      // Prepare fields for update
-      const updateFields = {
-        productName: data.productName,
-        description: data.description,
-        brand: data.brand,
-        category: data.category,
-        regularPrice: data.regularPrice,
-        salePrice: data.salePrice,
-        productOffer: data.productOffer || 0,
-        quantity: data.quantity,
-        isBlocked: data.isBlocked,
-        status: data.status,
-      };
-  
-      // Add new images to the existing productImages array if files are provided
-      if (images.length > 0) {
-        updateFields.productImages = [...product.productImages, ...images];
-      }
-  
-      console.log("Fields to Update:", updateFields);
-  
-      // Update the product
-      const updatedProduct = await Product.findByIdAndUpdate(id, updateFields, {
-        new: true, // Return the updated document
-        runValidators: true, // Ensure schema validations are run
-      });
-  
-      console.log("Product updated successfully:", updatedProduct);
-  
-      // Redirect or respond
-      res.redirect("/admin/products");
-    } catch (error) {
-      console.error("Error updating product:", error);
-      res.redirect("/pagenotfound");
     }
-  };
-  
+
+
 
 
 
@@ -459,7 +327,7 @@ module.exports = {
     addProductOffer,
     removeProductOffer,
     getEditProduct,
-    updateProduct,
+    editProduct,
     blockProduct,
     unblockProduct
 }

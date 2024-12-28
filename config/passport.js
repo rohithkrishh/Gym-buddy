@@ -46,14 +46,14 @@ passport.use(
 
 
 passport.serializeUser((user, done) => {
-    console.log("Serializing user with ID:", user.id); // Debugging
+    //console.log("Serializing user with ID:", user.id); // Debugging
     done(null, user.id); // Storing user ID in session
 });
 
 passport.deserializeUser((id, done) => {
     User.findById(id)
         .then((user) => {
-            console.log("Deserializing user:", user); // Debugging
+            //console.log("Deserializing user:", user); // Debugging
             done(null, user);
         })
         .catch((err) => {

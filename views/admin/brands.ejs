@@ -91,7 +91,7 @@
                     </div>
                   </td>
                   <td class="text-start">
-                    <% if(brand.isBlocked===true){%>
+                    <!-- <% if(brand.isBlocked===true){%>
                     <span
                       class="badge rounded-pill alert-danger"
                       style="width: 60px"
@@ -103,7 +103,23 @@
                       style="width: 60px"
                       >Active</span
                     >
-                    <%}%>
+                    <%}%> -->
+                    <% if (brand.isBlocked === true) { %>
+                      <span
+                        class="badge rounded-pill"
+                        style="width: 60px; background-color: #dc3545; color: white;"
+                      >
+                        Blocked
+                      </span>
+                    <% } else { %>
+                      <span
+                        class="badge rounded-pill"
+                        style="width: 60px; background-color: #28a745; color: white;"
+                      >
+                        Active
+                      </span>
+                    <% } %>
+                    
                   </td>
                   <td class="text-start">
                     <%if(brand.isBlocked===false){%>

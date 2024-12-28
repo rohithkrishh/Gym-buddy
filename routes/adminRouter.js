@@ -49,8 +49,10 @@ router.get("/blockProduct",adminAuth,productController.blockProduct);
 router.get("/unblockProduct",adminAuth,productController.unblockProduct)
 
 router.get("/editProduct",adminAuth,productController.getEditProduct);
-router.post("/updateProduct/:id",adminAuth,productController.updateProduct);
-//app.post('/admin/updateProduct/:id', updateProduct);
+router.post("/editProduct/:id",adminAuth,uploads.array("images",4),productController.editProduct);
+
+
+
 
 
 

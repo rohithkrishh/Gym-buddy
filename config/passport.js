@@ -4,59 +4,63 @@ const User=require("../models/userSchema")
 const env=require("dotenv").config()
 
 
+passport.use(
+    new GoogleStrategy(
+        {
+            clientID: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:3000/google/callback",
+        },
+        async (accessToken, refreshToken, profile, done) => {
+            try {
+                console.log("Google profile received:", profile);
 
-passport.use(new GoogleStrategy({
+                let user = await User.findOne({ googleId: profile.id });
+                if (user) {
+                    console.log("Existing user found:", user);
+                    return done(null, user);
+                }
 
-    clientID:process.env.GOOGLE_CLIENT_ID,
-    clientSecret:process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL:"/google/callback"
-},
+                const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
+                if (!email) {
+                    console.error("No email found in Google profile");
+                    return done(new Error("Email not found"), null);
+                }
 
-async (accessToken,refresToken,profile,done)=>{
+                user = new User({
+                    name: profile.displayName,
+                    email: email,
+                    googleId: profile.id,
+                });
+                await user.save();
+                console.log("New user created:", user);
+                return done(null, user);
+            } catch (error) {
+                console.error("Error during Google Strategy authentication:", error);
+                return done(error, null);
+            }
+        }
+    )
+);
 
-try {
-  
-    let user= await User.findOne({googleId:profile.id })
-    if(user){
-        console.log("mmmmmmmmmmmm");
-        return done(null,user)
-    }else{
-        user= new User({
-name:profile.displayName,
-email:profile.emails[0].value,
-googleId:profile.id
-        })
-        await user.save()
-        return done(null,user)
-    }
-    
-} catch (error) {
 
- return done(error,null)   
-}
 
-}
-))
+passport.serializeUser((user, done) => {
+    console.log("Serializing user with ID:", user.id); // Debugging
+    done(null, user.id); // Storing user ID in session
+});
 
-passport.serializeUser((user,done)=>{
-    done(null,user.id)
-    console.log("Serializing user:", user);
-
-})
-
-passport.deserializeUser((id,done)=>{
-
+passport.deserializeUser((id, done) => {
     User.findById(id)
-    .then(user=>{
-        done(null,user)
-        console.log("deSerializing user:", user);
-
-    })
-    .catch(err=>{
-        done(err,null)
-    })
-})
-
+        .then((user) => {
+            console.log("Deserializing user:", user); // Debugging
+            done(null, user);
+        })
+        .catch((err) => {
+            console.error("Error during deserialization:", err);
+            done(err, null);
+        });
+});
 
 
 

@@ -7,7 +7,7 @@ const productSchema = new Schema(
     productName: {
       type: String,
       required: true,
-      trim: true, 
+      trim: true, // Removes leading/trailing spaces
     },
     description: {
       type: String,
@@ -17,24 +17,29 @@ const productSchema = new Schema(
       type: String,
       required: true,
     },
-    category:{
-      type:Schema.Types.ObjectId,
-      ref:"Category",
-      required:true
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
+      required: true,
     },
     regularPrice: {
       type: Number,
       required: true,
+      min: 0, // Regular price must be non-negative
     },
     salePrice: {
       type: Number,
       required: true,
       validate: {
         validator: function (value) {
-          return value <= this.regularPrice; // Ensures salePrice is not higher than regularPrice
+          return value <= this.regularPrice; // Sale price cannot exceed regular price
         },
-        message: "Sale price should not exceed the regular price.",
+        message: "Sale price cannot be greater than the regular price.",
       },
+    },
+    productOffer: {
+      type: Number, // Represented as a percentage (e.g., 10 for 10%)
+      default: 0,
     },
     quantity: {
       type: Number,
@@ -46,7 +51,7 @@ const productSchema = new Schema(
       required: true,
       validate: {
         validator: function (value) {
-          return value.length > 0; // Ensures at least one image is provided
+          return value.length > 0; // At least one image is required
         },
         message: "At least one product image is required.",
       },
@@ -65,8 +70,11 @@ const productSchema = new Schema(
   { timestamps: true }
 );
 
-const product = mongoose.model("Product", productSchema);
-module.exports = product;
+// Index for faster queries on category and block status
+productSchema.index({ category: 1, isBlocked: 1 });
+
+const Product = mongoose.model("Product", productSchema);
+module.exports = Product;
 
 
 

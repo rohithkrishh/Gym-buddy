@@ -3,11 +3,13 @@ const User = require("../models/userSchema");
 const userAuth = (req,res,next)=>{
 
 if(req.session.user){
+  console.log('qwertyu',req.session.user)
 User.findById(req.session.user)
 .then(data=>{
     if(data && !data.isBlocked){
         next();
     }else{
+      console.log('1login')
         res.redirect("/login")
     }
 })
@@ -19,41 +21,16 @@ User.findById(req.session.user)
 
 })
 }else{
+  console.log('2login')
     res.redirect("/login")
 }
  
 }
 
 
-// const adminAuth = async (req, res, next) => {
-//   try {
-//     console.log('user :',req.session.user);
-//     console.log('admin :',req.session.admin);
-//     console.log('isAdmin :',req.session.isAdmin);
-
-//     // Check if user session exists and is an admin
-//     const userId = req.session.admin; // Assuming `req.session.user` contains the user's ID
-//     //const isAdmin = req.session.isAdmin; // Assuming `req.session.isAdmin` is set during login
-
-//     if (userId ) {
-//       return next(); // User is authenticated and an admin
-//     }
-
-//     // Redirect to login if user is not an admin
-//     return res.redirect("/admin/login");
-//   } catch (error) {
-//     console.error("Error in adminAuth middleware:", error);
-//     return res.redirect("/admin/pageerror"); // Redirect to a generic error page on error
-//   }
-// };
-
 const adminAuth = async (req, res, next) => {
   try {
-    // Debugging session details
-    console.log("user :", req.session?.user); // Null-safe access
-    console.log("admin :", req.session?.admin);
-    console.log("isAdmin :", req.session?.isAdmin);
-
+   
     // Check if session exists and user is an admin
     if (req.session && req.session.admin) {
       return next(); // Admin is authenticated
@@ -68,13 +45,10 @@ const adminAuth = async (req, res, next) => {
 };
 
 
-  
 
-
-  
 
 module.exports={
-    userAuth,adminAuth
+    userAuth,adminAuth,
 }
 
 

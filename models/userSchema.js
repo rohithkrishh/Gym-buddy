@@ -1,87 +1,98 @@
-const mongoose = require("mongoose");
 
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const userSchema = new Schema({
+const userSchema = new Schema(
+  {
     name: {
-        type: String, 
-        //required: true
+      type: String
     },
     email: {
-        type: String,  
-        required: true,
-        unique: true
+      type: String,
+      required: true,
+      unique: true
     },
     phone: {
-        type: String,  
-        required: false,
-        unique: false,
-        sparse: true,
-        default:null
-      
+      type: String,
+      default: null,
+      sparse: true
     },
     googleId: {
-        type: String,
-       // required:true,  
-         unique: true,
-         sparse:true
+      type: String,
+      unique: true,
+      sparse: true
     },
     password: {
-        type: String,  
-        //required: false
+      type: String
     },
     isBlocked: {
-        type: Boolean,
-        default: false
+      type: Boolean,
+      default: false
     },
     isAdmin: {
-        type: Boolean,
-        default: false  
+      type: Boolean,
+      default: false
     },
-    cart: [{
-        type: Schema.Types.ObjectId, 
-        ref: "Cart"  
-    }],
+    cart: {
+      type: Schema.Types.ObjectId,
+      ref: "Cart"
+    },
     wallet: {
-        type: Schema.Types.ObjectId,  
-        ref: "Wishlist"  
+      type: Schema.Types.ObjectId,
+      ref: "Wallet"
     },
-    wishlist: [{
-        type: Schema.Types.ObjectId,  
-        ref: "Wishlist" 
-    }],
-    orderHistory: [{
-        type: Schema.Types.ObjectId,  
-        ref: "Order"  
-    }],
-    createdOn: {
-        type: Date,
-        default: Date.now
+    wishlist: {
+      type: Schema.Types.ObjectId,
+      ref: "Wishlist"
     },
+    orderHistory: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Order"
+      }
+    ],
     referalCode: {
-        type: String
+      type: String,
+      unique: true,
+      sparse: true
     },
     redeemed: {
-        type: Boolean
+      type: Boolean
     },
-    redeemedUsers: [{
-        type: Schema.Types.ObjectId, 
+    redeemedUsers: [
+      {
+        type: Schema.Types.ObjectId,
         ref: "User"
-    }],
-    searchHistory: [{
+      }
+    ],
+    searchHistory: [
+      {
         category: {
-            type: Schema.Types.ObjectId,  
-            ref: "Category"
+          type: Schema.Types.ObjectId,
+          ref: "Category"
         },
         brand: {
-            type: String
+          type: String
         },
         searchOn: {
-            type: Date,
-            default: Date.now
+          type: Date,
+          default: Date.now
         }
-    }]
-});
+      }
+    ],
+    isEmailVerified: {
+      type: Boolean,
+      default: false
+    },
+    resetPasswordToken: {
+      type: String
+    },
+    resetPasswordExpires: {
+      type: Date
+    }
+  },
+  { timestamps: true }
+);
 
 const User = mongoose.model("User", userSchema);
 
@@ -94,98 +105,100 @@ module.exports = User;
 
 
 
+// const mongoose = require("mongoose");
 
+// const { Schema } = mongoose;
 
-
-
-// const mongoose=require("mongoose");
-
-// const{Schema}=mongoose;
-
-
-// const userSchema= new Schema({
-
-//     name:{
-//         type:"string",
-//         required:true
+// const userSchema = new Schema({
+//     name: {
+//         type: String, 
+//         //required: true
 //     },
-//     email:{
-//         type:"string",
-//         required:true,
-//         unique:true
+//     email: {
+//         type: String,  
+//         required: true,
+//         unique: true
 //     },
-//     phone:{
-//         type:"string",
-//         required:false,
-//         unique:false,
-//         sparse:true,
+//     phone: {
+//         type: String,  
+//         required: false,
+//         unique: false,
+//         sparse: true,
 //         default:null
+      
 //     },
-//     googleId:{
-//         type:"string",
-//         unique:true
+//     googleId: {
+//         type: String,
+//        // required:true,  
+//          unique: true,
+//          sparse:true
 //     },
-//     password:{
-// type:"string",
-// required:false
+//     password: {
+//         type: String,  
+//         //required: false
 //     },
-//     isBlocked:{
-//         type:Boolean,
-//         default:false
+//     isBlocked: {
+//         type: Boolean,
+//         default: false
 //     },
-// isAdmin:{
-//     type:Boolean,
-//     default:false  
-// },
-//  cart:[{
-// type:Schema.Types.objectId,
-// ref:"Cart"
-
+//     isAdmin: {
+//         type: Boolean,
+//         default: false  
+//     },
+//     cart: [{
+//         type: Schema.Types.ObjectId, 
+//         ref: "Cart"  
 //     }],
-//     wallet:{
-//         type:Schema.Types.ObjectId,
-//         ref:"wishlist"
+//     wallet: {
+//         type: Schema.Types.ObjectId,  
+//         ref: "Wishlist"  
 //     },
-//     wishlist:[{
-//         type:Schema.Types.ObjectId,
-//         ref:"Wishlist"
+//     wishlist: [{
+//         type: Schema.Types.ObjectId,  
+//         ref: "Wishlist" 
 //     }],
-//     orderHistory:[{
-//         type:Schema.Types.ObjectId,
-//         ref:"Order"
+//     orderHistory: [{
+//         type: Schema.Types.ObjectId,  
+//         ref: "Order"  
 //     }],
-//     createdOn : {
-//         type:Date,
-//         default:Date.now,
+//     createdOn: {
+//         type: Date,
+//         default: Date.now
 //     },
-//     referalCode:{
-//         type:String
+//     referalCode: {
+//         type: String
 //     },
-//     redeemed:{
-//         type:Boolean
+//     redeemed: {
+//         type: Boolean
 //     },
 //     redeemedUsers: [{
-//         type: Schema.Types.ObjectId,
-//         ref:"User"
+//         type: Schema.Types.ObjectId, 
+//         ref: "User"
 //     }],
 //     searchHistory: [{
 //         category: {
-//             type: Schema.Types.ObjectId,
-//             ref:"Category",
+//             type: Schema.Types.ObjectId,  
+//             ref: "Category"
 //         },
 //         brand: {
-//             type : String
+//             type: String
 //         },
-//         searchOn : {
+//         searchOn: {
 //             type: Date,
 //             default: Date.now
 //         }
 //     }]
-  
-//  })
+// });
+
+// const User = mongoose.model("User", userSchema);
+
+// module.exports = User;
 
 
-//  const User = mongoose.model("User",userSchema);
- 
- 
-//  module.exports = User;
+
+
+
+
+
+
+

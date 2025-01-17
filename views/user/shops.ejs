@@ -1,7 +1,7 @@
 ﻿<%- include("../../views/partials/user/header") %>
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
     <main class="main">
         <div class="page-header breadcrumb-wrap">
             <div class="container">
@@ -15,13 +15,21 @@
             <div class="container">
                 <div class="header-wrap">
                     <div class="logo logo-width-1">
-                       
+
                     </div>
                     <div class="header-right">
                         <div class="search-style-2">
-                            <form action="/search" method="POST">
-                                <input type="text" name="query" placeholder="Search for items...">
+                            <form method="GET" action="/shop">
+                                <input 
+                                    type="text" 
+                                    name="searchWord" 
+                                    placeholder="Search products..." 
+                                   
+                                />
+                                <button type="submit">Search</button>
                             </form>
+                            
+                            
                         </div>
                     </div>
                 </div>
@@ -32,17 +40,19 @@
                 <div class="row flex-row-reverse">
                     <div class="col-lg-9">
                         <div class="shop-product-fillter">
-                       
+
                             <div class="totall-product">
-                                <p> We found <strong class="text-brand"><%=products.length%></strong> items for you!</p>
+                                <p> We found <strong class="text-brand">
+                                        <%=products.length%>
+                                    </strong> items for you!</p>
                             </div>
-                          
+
                             <div class="sort-by-product-area">
                                 <div class="sort-by-cover mr-10">
-                                   
+
                                 </div>
 
-                                <!-- filter based on price low to high -->
+                                <!-- filter based on price low to high --------->
 
                                 <div class="sort-by-cover">
                                     <div class="sort-by-product-wrap">
@@ -65,7 +75,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row product-grid-3">
+                        <div class="row product-grid-4">
 
                             <%for(let i=0;i<products.length;i++){%>
 
@@ -76,16 +86,20 @@
                                                 <a href="/productDetails?id=<%=products[i]._id%>">
                                                     <img class="default-img"
                                                         src="/assets/login/<%=products[i].productImages[0]%>" alt="">
-                                                    <!-- <img class="hover-img" src="assets/imgs/shop/product-2-2.jpg" alt=""> -->
+                                                    <!-- <img class="hover-img" src="assets/imgs/shop/product-2-2.jpg" alt=""> ----------->
                                                 </a>
                                             </div>
                                             <div class="product-action-1">
                                                 <a aria-label="Quick view" class="action-btn hover-up"
                                                     data-bs-toggle="modal" data-bs-target="#quickViewModal">
                                                     <i class="fi-rs-search"></i></a>
-                                                <a aria-label="Add To Wishlist" class="action-btn hover-up"
-                                                    href="/wishList"><i class="fi-rs-heart"></i></a>
-                                               
+                                                    
+                                                <!-- <a aria-label="Add To Wishlist" class="action-btn hover-up"
+                                                    href="/wishList"><i class="fi-rs-heart"></i></a> -->
+
+                                                    <a aria-label="Add To Wishlist" class="action-btn hover-up"
+                                                    onclick="addToWishlist('<%=products[i]._id%>')"><i class="fi-rs-heart"></i></a>
+
                                             </div>
                                             <div class="product-badges product-badges-position product-badges-mrg">
                                                 <span class="hot">Hot</span>
@@ -94,37 +108,53 @@
                                         <div class="product-content-wrap">
                                             <div class="product-category">
                                                 <% if (products[i].category) { %>
-                                                    <a href="shop-grid-right.html"><%=products[i].category.name%></a>
-                                                <% } else { %>
-                                                    <span>Uncategorized</span>
-                                                <% } %>
+                                                    <a href="shop-grid-right.html">
+                                                        <%=products[i].category.name%>
+                                                    </a>
+                                                    <% } else { %>
+                                                        <span>Uncategorized</span>
+                                                        <% } %>
                                             </div>
                                             <h2><a href="shop-product-right.html">
                                                     <%=products[i].productName%>
                                                 </a></h2>
-                                            <div class="rating-result" title="90%">
-                                                <% if (products[i].salePrice < products[i].regularPrice) { %>
+                                            <div class="rating-result" title="">
+                                              
+                                                <% 
+                                                const productOffer = products[i].offer || 0; // Product-specific offer
+                                                const categoryOffer = products[i].category.categoryOffer || 0; // Category-specific offer
+                                                const higherOffer = Math.max(productOffer, categoryOffer); // Get the higher offer
+                                            
+                                                // Calculate the sale price based on the higher offer
+                                                const salePrice = Math.round(products[i].regularPrice - (products[i].regularPrice * higherOffer / 100));
+                                                %>
+                                            
+                                    
+                                                <% if (higherOffer > 0) { %>
                                                     <span class="save-price font-md color3 ml-15">
-                                                        <% const discount=Math.round(((products[i].regularPrice -
-                                                            products[i].salePrice) / products[i].regularPrice) * 100);
-                                                            %>
-                                                            <%= discount %> % Off
+                                                        <%= higherOffer %>% Off
                                                     </span>
-                                                    <% } %>
+                                                <% } %>
+                                            
                                             </div>
                                             <div class="product-price">
                                                 <span>
-                                                    <%=products[i].salePrice%>
+                                                    <%= salePrice %>
                                                 </span>
                                                 <span class="old-price">
-                                                    <%=products[i].regularPrice%>
+                                                    <%= products[i].regularPrice %>
                                                 </span>
                                             </div>
-                                            <div class="product-action-1 show">
-                                                <a aria-label="Add To Cart" class="action-btn hover-up"
-                                                    href="#"><i class="fi-rs-shopping-bag-add" onclick="addToCart('<%= products[i]._id %>')"></i>
+                                            
+                                                                                                                          
+                                           <div class="product-action-1 show">
+
+                                                <a aria-label="Add To Cart" class="action-btn hover-up" href="#"><i
+                                                        class="fi-rs-shopping-bag-add"
+                                                        onclick="addToCart('<%= products[i]._id %>')"></i>
 
                                                 </a>
+
                                             </div>
                                         </div>
                                     </div>
@@ -133,34 +163,43 @@
                                 <%}%>
 
                         </div>
-                        <!--pagination-->
+
+
+                        <!--pagination----------->
                         <div class="pagination-area mt-15 mb-sm-5 mb-lg-0">
                             <nav aria-label="Page navigation example">
                                 <ul class="pagination justify-content-start">
                                     <%for(let i=0;i<=totalPages;i++){%>
-                                    <li class="page-item active ?page=<%= currentPage - 1 %>">
-                                        <a class="page-link" href="?page=<%= i %>"><%= i%></a>
-                                    </li>
-                                    <%}%>
-                                  
+                                        <li class="page-item active ?page=<%= currentPage - 1 %>">
+                                            <a class="page-link" href="?page=<%= i %>">
+                                                <%= i%>
+                                            </a>
+                                        </li>
+                                        <%}%>
+
                                 </ul>
                             </nav>
                         </div>
                     </div>
-                    <!-- filter by category -->
+                    <!-- filter by category ------------->
                     <div class="col-lg-3 primary-sidebar sticky-sidebar">
+                        <!-- Category Filter -->
                         <div class="widget-category mb-30">
                             <h5 class="section-title style-1 mb-30 wow fadeIn animated">Category</h5>
                             <ul class="categories">
-                                <%for(let i=0;i<category.length;i++){%>
-                                    <li><a href="/filter?category=<%=category[i]._id%>">
-                                            <%=category[i].name%>
-                                        </a></li>
-                                 <%}%>
+                                <% for (let i=0; i < categories.length; i++) { %>
+                                    <li>
+                                        <a href="/filter?category=<%= categories[i]._id %>">
+                                            <%= categories[i].name %>
+                                        </a>
+                                    </li>
+                                    <% } %>
                             </ul>
                         </div>
-                        <!-- Fillter By Price -->
-                        <div class="sidebar-widget price_range range mb-30"
+
+
+                        <!-- Filter by Price -->
+                        <!-- <div class="sidebar-widget price_range range mb-30"
                             style="padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px;">
                             <div class="widget-header position-relative mb-20 pb-10"
                                 style="border-bottom: 1px solid #ddd; padding-bottom: 10px;">
@@ -171,48 +210,56 @@
                             <div class="price-filter">
                                 <div class="price-filter-inner">
                                     <div class="price-option" style="display: flex; flex-direction: column; gap: 8px;">
-                                        <a href="/filterPrice?gt=0&lt=20000" class="btn btn-sm btn-default"
+                                        <a href="/filterPrice?minPrice=0&maxPrice=20000" class="btn btn-sm btn-default"
                                             style="display: block; margin-top: 15px; padding: 10px; font-size: 14px; text-align: center; color: #fff; background-color: #8d9b9a; border-radius: 5px; text-transform: uppercase; font-weight: bold; text-decoration: none;">
-                                            <i class="fi-rs-filter mr-5"></i>below 20,000 
+                                            <i class="fi-rs-filter mr-5"></i> Below 20,000
                                         </a>
-                                        <a href="/filterPrice?gt=20000&lt=25000" class="btn btn-sm btn-default"
+                                        <a href="/filterPrice?minPrice=20000&maxPrice=25000"
+                                            class="btn btn-sm btn-default"
                                             style="display: block; margin-top: 15px; padding: 10px; font-size: 14px; text-align: center; color: #fff; background-color: #088178; border-radius: 5px; text-transform: uppercase; font-weight: bold; text-decoration: none;">
                                             <i class="fi-rs-filter mr-5"></i> 20,000 - 25,000
                                         </a>
-                                        <a href="/filterPrice?gt=25000&lt=50000" class="btn btn-sm btn-default"
+                                        <a href="/filterPrice?minPrice=25000&maxPrice=50000"
+                                            class="btn btn-sm btn-default"
                                             style="display: block; margin-top: 15px; padding: 10px; font-size: 14px; text-align: center; color: #fff; background-color: #8d9b9a; border-radius: 5px; text-transform: uppercase; font-weight: bold; text-decoration: none;">
                                             <i class="fi-rs-filter mr-5"></i> 25,000 - 50,000
-                                            <a href="/filterPrice?gt=30000&lt=100000" class="btn btn-sm btn-default"
-                                                style="display: block; margin-top: 15px; padding: 10px; font-size: 14px; text-align: center; color: #fff; background-color: #088178; border-radius: 5px; text-transform: uppercase; font-weight: bold; text-decoration: none;">
-                                                <i class="fi-rs-filter mr-5"></i> Above 30,000
-                                            </a>
+                                        </a>
+                                        <a href="/filterPrice?minPrice=30000&maxPrice=100000"
+                                            class="btn btn-sm btn-default"
+                                            style="display: block; margin-top: 15px; padding: 10px; font-size: 14px; text-align: center; color: #fff; background-color: #088178; border-radius: 5px; text-transform: uppercase; font-weight: bold; text-decoration: none;">
+                                            <i class="fi-rs-filter mr-5"></i> Above 30,000
+                                        </a>
                                     </div>
                                 </div>
                             </div>
+                        </div> -->
 
-                        </div>
 
-                        <!-- Product sidebar Widget -->
-                        <div class="sidebar-widget product-sidebar  mb-30 p-30 bg-grey border-radius-10">
+                        <!-- Product sidebar Widget ------->
+                        <!-- <div class="sidebar-widget product-sidebar  mb-30 p-30 bg-grey border-radius-10">
                             <div class="widget-header position-relative mb-20 pb-10">
                                 <h5 class="widget-title mb-10">New products</h5>
                                 <div class="bt-1 border-color-1"></div>
                             </div>
                             <div class="single-post clearfix">
-                            <%for(let i=0;i<products.length-9;i++){%>    
-                                <div class="image">
-                                    <img src="/uploads/re-image/<%=products[i].productImage[0]%>" alt="">
-                                </div>
-                                <div class="content pt-10">
-                                    <h5><a href="/productDetails?id=<%=products[i]._id%>"> <%=products[i].productName%></a></h5>
-                                    <p class="price mb-0 mt-5"> <%=products[i].salePrice%></p>
-                                    <div class="product-rate">
-                                        <div class="product-rating" style="width:90%"></div>
+                                <%for(let i=0;i<products.length-9;i++){%>
+                                    <div class="image">
+                                        <img src="/uploads/re-image/<%=products[i].productImage[0]%>" alt="">
                                     </div>
-                                </div>
-                            <%}%>    
+                                    <div class="content pt-10">
+                                        <h5><a href="/productDetails?id=<%=products[i]._id%>">
+                                                <%=products[i].productName%>
+                                            </a></h5>
+                                        <p class="price mb-0 mt-5">
+                                            <%=products[i].salePrice%>
+                                        </p>
+                                        <div class="product-rate">
+                                            <div class="product-rating" style="width:90%"></div>
+                                        </div>
+                                    </div>
+                                    <%}%>
                             </div>
-                         
+
                         </div>
                         <div class="banner-img wow fadeIn mb-45 animated d-lg-block d-none">
                             <img src="assets/imgs/shop/classic.webp" alt="">
@@ -221,50 +268,64 @@
                                 <h4>Limitted to <br>Total 10 Pcs</h4>
                                 <a href="#">Shop Now <i class="fi-rs-arrow-right"></i></a>
                             </div>
-                        </div>
-                        
+                        </div> -->
+
                     </div>
                 </div>
             </div>
         </section>
     </main>
-    
+
     <%- include("../../views/partials/user/footer") %>
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-function addToCart(productId) {
+        <script>
 
-$.ajax({
-    url: "/addToCart",
-    method: "POST",
-    data: { productId: productId },
-    success: (response) => {
-        if (response.status) {
-            Swal.fire({
-                title: "Added To Cart",
-                text: "The Product Has been Added to Your Cart",
-                icon: "Success",
-                timer: 2000
-            })
-        } else {
-            Swal.fire({
-                title: "Product Alredy in Cart",
-                text: response.message,
-                icon: "info",
-                timer: 2000
-            })
-        }
-    },
-    error: (error) => {
-        Swal.fire({
-            title: "Error",
-            text: "Error Adding the Poduct to your Cart..!",
-            icon: "error",
-            timer: 2000
-        })
-    }
-})
-}
-    </script>
+
+            function updatePrice(productId) {
+                const variantDropdown = document.getElementById(`variant_${productId}`);
+                const selectedPrice = variantDropdown.value;
+                const priceElement = document.getElementById(`price_${productId}`);
+                priceElement.textContent = `₹${selectedPrice}`;
+            }
+
+            function addToWishlist(productId){
+
+                $.ajax({
+               url:'/addToWishlist',
+               method:'POST',
+               data:{productId:productId},
+               success:(response)=>{
+             if(response.status){
+                swal.fire({
+                    title:'Added to wishlist',
+                    text:response.message,
+                    icon:'success',
+                    timer:2000
+                })
+             }else{
+                swal.fire({
+                    title:'already in wishlist',
+                    text:response.message,
+                    icon:'info',
+                    timer:2000
+                })
+             }
+               },
+               error:(error)=>{
+                swal.fire({
+                title:'Error',
+                text:'Error adding product to your wishlist',
+                icon:'error',
+                timer:2000
+                })
+                
+
+               }
+               
+                })
+            }
+
+
+        </script>

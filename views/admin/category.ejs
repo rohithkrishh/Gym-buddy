@@ -99,12 +99,22 @@
                 <textarea placeholder="Type here" name="description" class="form-control" id="descriptionId" required></textarea>
                 <div id="description-error" class="error-message"></div>
               </div>
+              <div class="mb-4">
+                <label for="type" class="form-label">Type</label>
+                <select name="type" class="form-control" id="type" required>
+                    <option value="" disabled selected>Select Category Type</option>
+                    <option value="strength">Strength</option>
+                    <option value="cardio">Cardio</option>
+                    <!-- Add more types as needed -->
+                </select>
+            </div>
               <div class="d-grid">
                 <button class="btn btn-primary" type="submit">
                   Create category
                 </button>
               </div>
             </form>
+           
           </div>
           <div class="col-md-8 ml-10">
             <div class="table-responsive">
@@ -129,7 +139,7 @@
                     <td class="text-start"><%=category.description%></td>
                     <td>
                       <%if(category.categoryOffer){%>
-                        <%=category.categoryOffer%>
+                        <%=category.categoryOffer%>%
                         <%}else{%>
                           0%
                           <%}%>
@@ -189,54 +199,76 @@
     </div>
 
   </section>
+
+
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10/dist/sweetalert2.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <script>
 
-function handleFormSubmit(event){
 
-    event.preventDefault();
-    if(!validateForm()){
-        return
+
+function handleFormSubmit(event) {
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    // Validate form fields before submitting
+    if (!validateForm()) {
+        return;
     }
+
+    // Get the values from the form
     const name = document.getElementsByName("name")[0].value;
     const description = document.getElementById("descriptionId").value;
-fetch('/admin/addCategory',{
-  method:'POST',
-  headers:{
-    'content-type':'application/json'
-  },
-  body:JSON.stringify({name,description})
-})
-.then(response=>{
-  if(!response.ok){
-    return response.json().then(err=>{
-      throw new Error(err.error);
-    })
-  }
-  return response.json();
-})
-.then(data=>{
-  location.reload();
-})
-.catch(error=>{
-  if(error.message === "Category already exists"){
-    Swal.fire({
-      icon:'error',
-      title:'Oops',
-      text:"Category already exists"
-    })
-  }else{
-    Swal.fire({
-      icon:"error",
-      title:"Oops",
-      text:"An error occured while adding the category"
-    })
-  }
-})
+    const type = document.getElementById("type").value;
 
+    // Send a POST request using fetch
+    fetch('/admin/addCategory', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, description, type })
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.error);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Show success message using Swal.fire
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: 'Category added successfully!',
+            timer: 2000, // Optional: Auto close after 2 seconds
+            showConfirmButton: false
+        }).then(() => {
+            // Redirect to the category page after success
+            window.location.href = '/admin/category'; // Update this path as per your application
+        });
+    })
+    .catch(error => {
+        // Handle errors and show appropriate messages
+        if (error.message === "Category already exists") {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops',
+                text: "Category already exists"
+            });
+        } else {
+            Swal.fire({
+                icon: "error",
+                title: "Oops",
+                text: "An error occurred while adding the category"
+            });
+        }
+    });
 }
+
+
 function validateForm(){
     clearErrorMessages();
     const name = document.getElementsByName("name")[0].value.trim();

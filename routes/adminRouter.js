@@ -2,11 +2,13 @@ const express=require("express");
 const router=express.Router();
 const adminController = require("../controllers/admin/adminController");
 //const { loadLogin } = require("../controllers/user/userControllers");
-const customerController = require("../controllers/admin/customerController")
-const categoryController = require("../controllers/admin/categoryControllers")
-const brandController = require("../controllers/admin/brandController")
-const productController = require("../controllers/admin/productController")
-const {userAuth,adminAuth} = require("../middlewares/auth")
+const customerController = require("../controllers/admin/customerController");
+const categoryController = require("../controllers/admin/categoryControllers");
+const brandController = require("../controllers/admin/brandController");
+const productController = require("../controllers/admin/productController");
+const orderController = require("../controllers/admin/orderController");
+const couponController = require("../controllers/admin/couponController")
+const {userAuth,adminAuth} = require("../middlewares/auth");
 const multer = require("multer")
 const storage = require("../helpers/multer");
 const uploads = multer({storage:storage});
@@ -31,6 +33,8 @@ router.get("/listCategory",adminAuth,categoryController.getListCategory);
 router.get("/unlistCategory",adminAuth,categoryController.getUnlistCategory);
 router.get("/editCategory",adminAuth,categoryController.getEditCategory);
 router.post("/editCategory/:id",adminAuth,categoryController.editCategory);
+router.post("/addCategoryOffer",adminAuth,categoryController.addCategoryOffer);
+router.post("/removeCategoryOffer",adminAuth,categoryController.removeCategoryOffer);
 
 //brand Management
 router.get("/brands",adminAuth,brandController.getBrandPage);
@@ -44,7 +48,7 @@ router.get( "/addProducts",adminAuth,productController.getProductAddPage);
 router.post("/addProducts",adminAuth,uploads.array("images",4),productController.addProducts);
 router.get("/products",adminAuth,productController.getAllProducts);
 router.post("/addProductOffer",adminAuth,productController.addProductOffer);
-router.post("removeProductOffer",adminAuth,productController.removeProductOffer);
+router.post("/removeProductOffer",adminAuth,productController.removeProductOffer);
 router.get("/blockProduct",adminAuth,productController.blockProduct);
 router.get("/unblockProduct",adminAuth,productController.unblockProduct)
 
@@ -52,18 +56,24 @@ router.get("/editProduct",adminAuth,productController.getEditProduct);
 router.post("/editProduct/:id",adminAuth,uploads.array("images",4),productController.editProduct);
 
 
+//Order Management
+router.get("/orderDetails/:id",orderController.getOrderDetails)
+router.get("/orderList",adminAuth,orderController.getOrderList);
+router.post("/orders/:orderId/status",adminAuth,orderController.updateOrderStatus);
 
 
+//coupon Management
+
+router.get("/coupon",adminAuth,couponController.CouponPage)
+router.post("/addCoupon",adminAuth,couponController.addCopon)
+router.get("/deleteCoupon",adminAuth,couponController.deleteCoupon)
+router.post("/editCoupon",adminAuth,couponController.editCoupon)
 
 
 
 
 
 module.exports = router
-
-
-
-
 
 
 

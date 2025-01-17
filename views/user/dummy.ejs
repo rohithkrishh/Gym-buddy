@@ -1,0 +1,240 @@
+
+
+const filterProduct = async (req, res) => {
+    try {
+        const user = req.session.user;
+        const category = req.query.category; // Category ID from query params
+        const minPrice = parseInt(req.query.minPrice) || 0; // Minimum price, default to 0
+        const maxPrice = parseInt(req.query.maxPrice) || Infinity; // Maximum price, default to Infinity
+
+        // Fetch the selected category
+        const findCategory = category ? await Category.findOne({ _id: category }) : null;
+
+        // Build the query object for filtering
+        const query = {
+            isBlocked: false,
+            regularPrice: { $gte: minPrice, $lte: maxPrice }, // Price range filter
+        };
+
+        if (findCategory) {
+            query.category = findCategory._id; // Filter by category
+        }
+
+        // Fetch the filtered products
+        let findProducts = await Product.find(query).lean();
+
+        // Pagination
+        const itemsPerPage = 6;
+        const currentPage = parseInt(req.query.page) || 1;
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const totalProducts = findProducts.length;
+        const totalPages = Math.ceil(totalProducts / itemsPerPage);
+
+        // Sort products by creation date
+        findProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        // Get products for the current page
+        const currentProduct = findProducts.slice(startIndex, startIndex + itemsPerPage);
+
+        // Fetch categories for sidebar filtering
+        const categories = await Category.find({ isListed: true });
+
+        // Pass the filtered products and data to the view
+        res.render("shops", {
+            user,
+            products: currentProduct,
+            categories,
+            totalPages,
+            currentPage,
+            selectedCategory: category || null,
+            selectedMinPrice: req.query.minPrice || 0,
+            selectedMaxPrice: req.query.maxPrice || Infinity,
+        });
+    } catch (error) {
+        console.error(error);
+        res.redirect("/pageNotFound");
+    }
+};
+
+
+<table class="table table-bordered text-center align-middle">
+    <thead>
+        <tr>
+            <th colspan="2">Product</th>
+            <th>Price</th>
+            <th>Stock Status</th>
+            <th>Action</th>
+            <th>Remove</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (wishlist.products && wishlist.products.length> 0) { %>
+            <% let i=0; %> <!-- Initialize i outside the loop -->
+                <% wishlist.products.forEach(product=> { %>
+                    <tr>
+                        <td class="image product-thumbnail" data-title="Image">
+                            <img src="/assets/login/<%= product.productId.productImages[0] %>"
+                                alt="<%= product.productId.productName %>"
+                                class="img-fluid rounded" style="max-width: 80px;">
+                        </td>
+                        <td class="product-des product-name" data-title="Product">
+                            <h6 class="mb-0"><a href="/productDetails?id=<%= product.productId._id %>">
+                                    <%= product.productId.productName %>
+                                </a></h6>
+                        </td>
+                        <td class="price" data-title="Price">
+                            <span>₹ <%= product.productId.salePrice %></span>
+                        </td>
+                        <td class="stock-status" data-title="Stock">
+                            <% if (product.productId.quantity> 0) { %>
+                                <span class="badge bg-success">In Stock</span>
+                                <% } else { %>
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                    <% } %>
+                        </td>
+                        <td data-title="Action">
+                            <button class="btn btn-sm btn-primary cart-button"
+                                data-product-id="<%= product.productId._id %>"
+                                data-bs-toggle="modal" data-bs-target="#sizeModal-<%= i %>">
+                                <i class="fi-rs-shopping-bag"></i> Add to cart
+                            </button>
+                        </td>
+                        <td data-title="Remove">
+                            <button class="btn btn-sm btn-outline-danger"
+                                onclick="removeFromWishlist('<%= product.id %>')">Remove</button>
+                        </td>
+                    </tr>
+
+                    <!-- Size Modal for Each Product -->
+                    <div id="sizeModal-<%= i %>" class="modal fade" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h4 class="modal-title">Select Size</h4>
+                                    <button type="button" class="btn-close"
+                                        data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="size-wrap">
+                                        <div class="block-26 mb-2">
+                                            <h5>Available Sizes</h5>
+                                            <ul
+                                                class="size-options list-unstyled d-flex flex-wrap">
+                                                <% product.productId.variants.forEach(({ size
+                                                    })=> { %>
+                                                    <li class="variant-option px-2 py-1 border rounded me-2 mb-2"
+                                                        data-size="<%= size %>">
+                                                        <%= size %>
+                                                    </li>
+                                                    <% }); %>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button id="modalOkButton-<%= i %>"
+                                        class="btn btn-primary modal-ok"
+                                        data-product-id="<%= product.productId._id %>">OK</button>
+                                    <button type="button" class="btn-cancle btn-secondary"
+                                        data-bs-dismiss="modal">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <% i++; %> <!-- Increment i after each iteration -->
+                        <% }); %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="6" class="text-center">
+                                        <div class="py-5">
+                                            <h5>Your wishlist is empty.</h5>
+                                            <a href="/" class="btn btn-primary mt-3">Start
+                                                Shopping</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <% } %>
+    </tbody>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ <section class="popular-categories section-padding mt-15 mb-25">
+    <div class="container wow fadeIn animated">
+        <h3 class="section-title mb-20"><span>Popular</span> Categories</h3>
+        <div class="carausel-6-columns-cover position-relative">
+            <div class="slider-arrow slider-arrow-2 carausel-6-columns-arrow"
+                id="carausel-6-columns-arrows"></div>
+            <div class="carausel-6-columns" id="carausel-6-columns">
+                <div class="card-1">
+                    <figure class=" img-hover-scale overflow-hidden">
+                        <a href="shop-grid-right.html"><img
+                                src="assets/imgs/shop/category-thumb-1.jpg" alt=""></a>
+                    </figure>
+                    <h5><a href="shop-grid-right.html">T-Shirt</a></h5>
+                </div>
+                <div class="card-1">
+                    <figure class=" img-hover-scale overflow-hidden">
+                        <a href="shop-grid-right.html"> <img
+                                src="assets/imgs/shop/category-thumb-2.jpg" alt=""></a>
+                    </figure>
+                    <h5><a href="shop-grid-right.html">Bags</a></h5>
+                </div>
+                <div class="card-1">
+                    <figure class=" img-hover-scale overflow-hidden">
+                        <a href="shop-grid-right.html"><img
+                                src="assets/imgs/shop/category-thumb-3.jpg" alt=""></a>
+                    </figure>
+                    <h5><a href="shop-grid-right.html">Sandan</a></h5>
+                </div>
+                <div class="card-1">
+                    <figure class=" img-hover-scale overflow-hidden">
+                        <a href="shop-grid-right.html"><img
+                                src="assets/imgs/shop/category-thumb-4.jpg" alt=""></a>
+                    </figure>
+                    <h5><a href="shop-grid-right.html">Scarf Cap</a></h5>
+                </div>
+                <div class="card-1">
+                    <figure class=" img-hover-scale overflow-hidden">
+                        <a href="shop-grid-right.html"><img
+                                src="assets/imgs/shop/category-thumb-5.jpg" alt=""></a>
+                    </figure>
+                    <h5><a href="shop-grid-right.html">Shoes</a></h5>
+                </div>
+                <div class="card-1">
+                    <figure class=" img-hover-scale overflow-hidden">
+                        <a href="shop-grid-right.html"><img
+                                src="assets/imgs/shop/category-thumb-6.jpg" alt=""></a>
+                    </figure>
+                    <h5><a href="shop-grid-right.html">Pillowcase</a></h5>
+                </div>
+                <div class="card-1">
+                    <figure class=" img-hover-scale overflow-hidden">
+                        <a href="shop-grid-right.html"><img
+                                src="assets/imgs/shop/category-thumb-7.jpg" alt=""></a>
+                    </figure>
+                    <h5><a href="shop-grid-right.html">Jumpsuits</a></h5>
+                </div>
+                <div class="card-1">
+                    <figure class=" img-hover-scale overflow-hidden">
+                        <a href="shop-grid-right.html"><img
+                                src="assets/imgs/shop/category-thumb-8.jpg" alt=""></a>
+                    </figure>
+                    <h5><a href="shop-grid-right.html">Hats</a></h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

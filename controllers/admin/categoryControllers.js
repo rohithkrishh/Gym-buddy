@@ -27,38 +27,52 @@ res.redirect("/pageerror")
 
 }
 
-// const addCategory = async(req,res)=>{
-//     const {name,description} = req.body;
-//     console.log("name:",name,"des:",description);
-    
-//     try {
 
-//         const existingCategory = await Category.findOne({name})
-//         if(existingCategory){
-//             return res.status(400).json({error:"category already exists"})
+
+// const addCategory = async (req, res) => {
+//     const { name, description } = req.body;
+
+//     // Log request data
+//     console.log("name:", name, "description:", description);
+
+//     // Validate input
+//     if (!name || !description) {
+//         return res.status(400).json({ error: "Name and description are required" });
+//     }
+
+//     try {
+//         // Check if category already exists
+//         const existingCategory = await Category.findOne({ name });
+//         if (existingCategory) {
+//             return res.status(400).json({ error: "Category already exists" });
 //         }
 
+//         // Create new category
 //         const newCategory = new Category({
-//             name,description,
-//         })
+//             name,
+//             description,
+//         });
 
+//         // Save category to database
 //         await newCategory.save();
-//         return res.json({message:"category added successfully"})
-        
+//         return res.json({ message: "Category added successfully" });
+
 //     } catch (error) {
-//       return res.status(500).json({error:"Internal Server Error"})  
+//         console.error("Error adding category:", error);
+//         return res.status(500).json({ error: "Internal Server Error" });
 //     }
-// }
+// };
+
 
 const addCategory = async (req, res) => {
-    const { name, description } = req.body;
+    const { name, description, type } = req.body;
 
     // Log request data
-    console.log("name:", name, "description:", description);
+    console.log("name:", name, "description:", description, "type:", type);
 
     // Validate input
-    if (!name || !description) {
-        return res.status(400).json({ error: "Name and description are required" });
+    if (!name || !description || !type) {
+        return res.status(400).json({ error: "Name, description, and type are required" });
     }
 
     try {
@@ -72,41 +86,40 @@ const addCategory = async (req, res) => {
         const newCategory = new Category({
             name,
             description,
+            type, // Include the type field
         });
 
         // Save category to database
         await newCategory.save();
         return res.json({ message: "Category added successfully" });
-
     } catch (error) {
         console.error("Error adding category:", error);
         return res.status(500).json({ error: "Internal Server Error" });
     }
 };
 
+
 const addCategoryOffer = async (req,res)=>{
 try{
     const percentage = parseInt(req.body.percentage);
+   
     const categoryId = req.body.categoryId;
-    const category = await Category.findOne(categoryId);
+    
+    const category = await Category.findById(categoryId);
+    
+
     if(!category){
         return res.status(400).json({status:false,messsage:"Category not found"});
     }
-      
-    const products =await product.find({category:category._id});
-    const hasProductOffer = products.some((product)=>product.productOffer>percentage);
-    if(hasProductOffer){
-        return res.json({status:false,message:"Products within this category already have product offers"})
-    }
-    await category.updateOne({_id:categoryId},{$set:{categoryOffer:percentage}})
-    for(const product of products){
-        product.productOffer = 0;
-        product.salePrice = product.regularPrice;
-        await product.save()
-    }
+
+    category.categoryOffer = percentage;
+
+    await category.save();
+   
     res.json({status:true});
     
  } catch (error){
+   
 res.status(500).json({status:false,message:"Internal Server Error"})
     }
 
@@ -123,15 +136,7 @@ const removeCategoryOffer = async (req,res)=>{
         }
 
         const percentage = category.categoryOffer;
-        const products = await product.find({category:category._id})
-
-        if(products.length>0){
-            for(const product of products){
-                product.salePrice +=Math.floor(product.regularPrice * (percentage/100));
-                product.productOffer = 0;
-                await product.save();
-            }
-        }
+      
 
         category.categoryOffer = 0;
         await category.save();
@@ -181,7 +186,6 @@ const getEditCategory = async (req,res)=>{
         res.redirect("/pageerror")
     }
 }
-
 
 
 

@@ -145,13 +145,14 @@
         }
     </style>
     <main class="main">
+
         <div class="page-header breadcrumb-wrap">
             <div class="container">
                 <div class="breadcrumb">
                     <a href="/" rel="nofollow">Home</a>
                     <span></span> <a href="/shoppingPage">shop</a>
                     <span></span>
-                    <%=product.productName%>
+                    <%= product.productName %>
                 </div>
             </div>
         </div>
@@ -164,52 +165,48 @@
                                 <div class="main-image-container" onmousemove="zoomImage(event)"
                                     onmouseleave="resetZoom(event)">
                                     <img id="mainImage" src="/assets/login/<%= product.productImages[0] %>"
-                                        alt="Product Image" class="main-image" onmouseleave="resetZoom(event)">
+                                        alt="Product Image" class="main-image">
                                 </div>
                                 <div class="thumbnail-strip">
-
-                                    <%for(let i=0;i<product.productImages.length;i++){%>
+                                    <% for (let i=0; i < product.productImages.length; i++) { %>
                                         <div>
                                             <img src="/assets/login/<%= product.productImages[i] %>"
-                                                alt="Product Thumbnail 1" class="thumbnail active"
+                                                alt="Product Thumbnail <%= i + 1 %>" class="thumbnail active"
                                                 onclick="changeImage(this)">
                                         </div>
-                                        <%}%>
-
+                                        <% } %>
                                 </div>
                             </div>
                             <div class="col-md-6 col-sm-12 col-xs-12">
                                 <div class="detail-info">
                                     <h2 class="title-detail">
-                                        <%=product.productName%>
+                                        <%= product.productName %>
                                     </h2>
                                     <div class="product-detail-rating">
                                         <div class="pro-details-brand">
-                                            <span> Category: <a href="shop-grid-right.html">
-                                                    <%=category.name%>
+                                            <span>Category: <a href="shop-grid-right.html">
+                                                    <%= category.name %>
                                                 </a></span>
                                         </div>
-                                        <div class="product-rate-cover text-end">
-                                            <div class="product-rate d-inline-block">
-                                                <div class="product-rating" style="width:90%">
-                                                </div>
-                                            </div>
-                                            <span class="font-small ml-5 text-muted"> (25 reviews)</span>
-                                        </div>
                                     </div>
+                                    <!-- Dynamic Price and Offer -->
                                     <div class="clearfix product-price-cover">
                                         <div class="product-price primary-color float-left">
-                                            <ins><span class="text-brand">
-                                                    <%=product.salePrice%>
-                                                </span></ins>
-                                            <ins><span class="old-price font-md ml-15">
-                                                    <%=product.regularPrice%>
-                                                </span></ins>
-                                            <% if (product.salePrice < product.regularPrice) { %>
+                                            <ins>
+                                                <span class="text-brand" id="dynamic-price">
+                                                    ₹<%= product.variants[0]?.price || product.salePrice %>
+                                                </span>
+                                            </ins>
+                                            <ins>
+                                                <span class="old-price font-md ml-15">
+                                                    ₹<%= product.regularPrice %>
+                                                </span>
+                                            </ins>
+                                            <% if (totalOffer) { %>
                                                 <span class="save-price font-md color3 ml-15">
-                                                    <% const discount=Math.round(((product.regularPrice -
-                                                        product.salePrice) / product.regularPrice) * 100); %>
-                                                        <%= discount %> % Off
+                                                    <% const discount=Math.round((totalOffer / product.regularPrice) *
+                                                        100); %>
+                                                        <%= discount %>% Off
                                                 </span>
                                                 <% } %>
                                         </div>
@@ -217,250 +214,374 @@
                                     <div class="bt-1 border-color-1 mt-15 mb-15"></div>
                                     <div class="short-desc mb-30">
                                         <p>
-                                            <%=product.description%>>
+                                            <%= product.description %>
                                         </p>
                                     </div>
-                                    <div class="product_sort_info font-xs mb-30">
-                                        <ul>
-                                            <li class="mb-10"><i class="fi-rs-crown mr-5"></i> 1 Year Manufacturing
-                                                Warranty</li>
-                                            <li class="mb-10"><i class="fi-rs-refresh mr-5"></i> 30 Day Return
-                                                Policy</li>
-                                            <li><i class="fi-rs-credit-card mr-5"></i> Cash on Delivery available
-                                            </li>
-                                        </ul>
-                                    </div>
 
-                                    <!-- <div class="attr-detail attr-material">
-                                        <strong class="mr-10">Material</strong>
-                                        <ul class="list-filter material-filter font-small">
-                                            <li><a href="#">Acrylic</a></li>
-                                            <li><a href="#">Canvas</a></li>
-                                            <li><a href="#">Alluminium</a></li>
-                                        </ul>
-                                    </div> -->
+                                    <!-- Variant Selector -->
+                                    <!-- <% if (product.variants && product.variants.length > 0) { %>
+                                                <div class="variant-selector mb-30">
+                                                    <label for="variant-select"><strong>Select Variant:</strong></label>
+                                                    <select id="variant-select" class="form-select" onchange="updateVariantDetails()">
+                                                        <% product.variants.forEach((variant, index) => { %>
+                                                            <option value="<%= index %>">
+                                                                <% if (variant.categoryType === 'strength') { %>
+                                                                    Weight: <%= variant.weight %> kg  %>
+                                                                <% } else if (variant.categoryType === 'cardio') { %>
+                                                                    Type: <%= variant.type %>  %>
+                                                                <% } %>
+                                                                <!-- (Stock: <%= variant.stock %>) -------------
+                                                            </option>
+                                                        <% }); %>
+                                                    </select>
+                                                </div>
+                                            <% } %>
+                
+                                            <!-- Stock and Availability --------------------
+                                            <ul class="product-meta font-xs color-grey mt-50">
+                                                <li class="mb-5">SKU: <span id="dynamic-sku"><%= product.variants[0]?.sku || 'N/A' %></span></li>
+                                                <li>Availability:<span id="dynamic-stock" class="in-stock text-success ml-5">
+                                                        <%= product.variants[0]?.stock || 0 %> Items In Stock
+                                                    </span></li>
+                                            </ul>
+                
+                                            <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+                                           
+
+                                            <div class="detail-extralink">
+                                               
+                                                <% if (product.variants.length) { %>
+                                                    <form id="add-to-cart-form">
+                                                        <input type="hidden" name="productId" value="<%= product._id %>">
+                                                        <input type="number" name="quantity" value="1" min="1" max="<%= product.quantity %>" required>
+                                                        <button type="button" class=" button mt-5 button-add-to-cart" id="addToCartBtn">Add to Cart</button>
+                                                    </form>
+                                                <% } else { %>
+                                                    <button class=" button button-add-to-cart" disabled>Out of Stock</button>
+                                                <% } %> 
+                                                <!-- <a class="action-btn hover-up" href="#"><i class="fi-rs-heart"></i> Wishlist</a> ---------
+                                            
+                                            </div> -->
 
 
-                                    <div class="bt-1 border-color-1 mt-30 mb-30"></div>
-                                    <div class="detail-extralink">
-                                        <div class="detail-qty border radius">
-                                            <a href="#" class="qty-down"><i class="fi-rs-angle-small-down"></i></a>
-                                            <span class="qty-val">1</span>
-                                            <a href="#" class="qty-up"><i class="fi-rs-angle-small-up"></i></a>
+
+                                    <% if (product.variants && product.variants.length> 0) { %>
+                                        <div class="variant-selector mb-30">
+                                            <label for="variant-select"><strong>Select Variant:</strong></label>
+                                            <select id="variant-select" class="form-select"
+                                                onchange="updateVariantDetails()">
+                                                <% product.variants.forEach((variant, index) => { %>
+                                                    <option value="<%= index %>" <%= variant.stock <= 0 ? 'disabled' : '' %>>
+                                                        <% if (variant.categoryType === 'strength') { %>
+                                                            Weight: <%= variant.weight %> kg
+                                                        <% } else if (variant.categoryType === 'cardio') { %>
+                                                            Type: <%= variant.type %>
+                                                        <% } %>
+                                                        (Stock: <%= variant.stock %>)
+                                                    </option>
+                                                <% }); %>
+                                                
+                                            </select>
                                         </div>
-                                        <div class="product-extra-link2">
-                                            <button type="submit" class="button button-add-to-cart"
-                                                onclick="addToCart('<%=product._id%>')">Add to
-                                                cart</button>
-                                            <a aria-label="Add To Wishlist" class="action-btn hover-up"
-                                                href="/whishList"><i class="fi-rs-heart"></i></a>
+                                        <% } %>
 
-                                        </div>
-                                    </div>
-                                    <ul class="product-meta font-xs color-grey mt-50">
-                                        <li class="mb-5">SKU: <a href="#">FWM15VKT</a></li>
-                                        <li class="mb-5">Tags: <a href="#" rel="tag">frame</a>, <a href="#"
-                                                rel="tag">Hyper cars</a>, <a href="#" rel="tag">Limited edition</a>
-                                        </li>
-                                        <li>Availability:<span class="in-stock text-success ml-5">
-                                                <%=quantity%> Items InStock
-                                            </span></li>
-                                    </ul>
+                                            <!-- Stock and Availability -->
+                                            <ul class="product-meta font-xs color-grey mt-50">
+                                                <li class="mb-5">SKU: <span id="dynamic-sku">
+                                                        <%= product.variants[0]?.sku || 'N/A' %>
+                                                    </span></li>
+                                                <li>Availability: <span id="dynamic-stock"
+                                                        class="in-stock text-success ml-5">
+                                                        <%= product.variants[0]?.stock || 0 %> Items In Stock
+                                                    </span></li>
+                                            </ul>
+
+                                            <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+
+                                            <div class="detail-extralink">
+                                                <% if (product.variants.length) { %>
+                                                    <form id="add-to-cart-form">
+                                                        <input type="hidden" name="productId"
+                                                            value="<%= product._id %>">
+                                                        <input type="hidden" name="variantId" id="variantId"
+                                                            value="<%= product.variants[0]?._id || '' %>">
+                                                        <input type="number" name="quantity" value="1" min="1"
+                                                            id="quantity-input" required>
+                                                        <button type="button" class="button mt-5 button-add-to-cart"
+                                                            id="addToCartBtn">Add to Cart</button>
+                                                    </form>
+                                                    <% } else { %>
+                                                        <button class="button button-add-to-cart" disabled>Out of
+                                                            Stock</button>
+                                                        <% } %>
+                                            </div>
+
+
+
+
+                                            <!-- Detail Info -->
                                 </div>
-                                <!-- Detail Info -->
                             </div>
-
                         </div>
                     </div>
-
                 </div>
-                <div class="row">
-                    <div class="col-lg-10 m-auto entry-main-content">
+        </section>
 
-                        <h3 class="section-title style-1 mb-30 mt-30">Reviews (3)</h3>
-                        <!--Comments-->
-                        <div class="comments-area style-2">
-                            <div class="row">
-                                <div class="col-lg-8">
-                                    <h4 class="mb-30">Customer questions & answers</h4>
-                                    <div class="comment-list">
-                                        <div class="single-comment justify-content-between d-flex">
-                                            <div class="user justify-content-between d-flex">
-                                                <div class="thumb text-center">
-                                                    <img src="assets/imgs/page/avatar-6.jpg" alt="">
-                                                    <h6><a href="#">Jacky Chan</a></h6>
-                                                    <p class="font-xxs">Since 2012</p>
+
+
+
+        <div class="row">
+            <div class="col-lg-10 m-auto entry-main-content">
+
+                <h3 class="section-title style-1 mb-30 mt-30">Reviews (3)</h3>
+                <!--Comments-->
+                <div class="comments-area style-2">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <h4 class="mb-30">Customer questions & answers</h4>
+                            <div class="comment-list">
+                                <div class="single-comment justify-content-between d-flex">
+                                    <div class="user justify-content-between d-flex">
+                                        <div class="thumb text-center">
+                                            <img src="assets/imgs/page/avatar-6.jpg" alt="">
+                                            <h6><a href="#">Jacky Chan</a></h6>
+                                            <p class="font-xxs">Since 2012</p>
+                                        </div>
+                                        <div class="desc">
+                                            <div class="product-rate d-inline-block">
+                                                <div class="product-rating" style="width:90%">
                                                 </div>
-                                                <div class="desc">
-                                                    <div class="product-rate d-inline-block">
-                                                        <div class="product-rating" style="width:90%">
-                                                        </div>
-                                                    </div>
-                                                    <p>Thank you very fast shipping from Poland only 3days.</p>
-                                                    <div class="d-flex justify-content-between">
-                                                        <div class="d-flex align-items-center">
-                                                            <p class="font-xs mr-30">December 4, 2020 at 3:12 pm </p>
-                                                            <a href="#" class="text-brand btn-reply">Reply <i
-                                                                    class="fi-rs-arrow-right"></i> </a>
-                                                        </div>
-                                                    </div>
+                                            </div>
+                                            <p>Thank you very fast shipping from Poland only 3days.</p>
+                                            <div class="d-flex justify-content-between">
+                                                <div class="d-flex align-items-center">
+                                                    <p class="font-xs mr-30">December 4, 2020 at 3:12 pm </p>
+                                                    <a href="#" class="text-brand btn-reply">Reply <i
+                                                            class="fi-rs-arrow-right"></i> </a>
                                                 </div>
                                             </div>
                                         </div>
-                                        <!--single-comment -->
-                                        <div class="single-comment justify-content-between d-flex">
-                                            <div class="user justify-content-between d-flex">
-                                                <div class="thumb text-center">
-                                                    <img src="assets/imgs/page/avatar-7.jpg" alt="">
-                                                    <h6><a href="#">Ana Rosie</a></h6>
-                                                    <p class="font-xxs">Since 2008</p>
-                                                </div>
-                                                <div class="desc">
-                                                    <div class="product-rate d-inline-block">
-                                                        <div class="product-rating" style="width:90%">
-                                                        </div>
-                                                    </div>
-                                                    <p>Great low price and works well.</p>
-                                                    <div class="d-flex justify-content-between">
-                                                        <div class="d-flex align-items-center">
-                                                            <p class="font-xs mr-30">December 4, 2020 at 3:12 pm </p>
-                                                            <a href="#" class="text-brand btn-reply">Reply <i
-                                                                    class="fi-rs-arrow-right"></i> </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!--single-comment -->
-                                        <div class="single-comment justify-content-between d-flex">
-                                            <div class="user justify-content-between d-flex">
-                                                <div class="thumb text-center">
-                                                    <img src="assets/imgs/page/avatar-8.jpg" alt="">
-                                                    <h6><a href="#">Steven Keny</a></h6>
-                                                    <p class="font-xxs">Since 2010</p>
-                                                </div>
-                                                <div class="desc">
-                                                    <div class="product-rate d-inline-block">
-                                                        <div class="product-rating" style="width:90%">
-                                                        </div>
-                                                    </div>
-                                                    <p>Authentic and Beautiful, Love these way more than ever expected
-                                                        They are Great earphones</p>
-                                                    <div class="d-flex justify-content-between">
-                                                        <div class="d-flex align-items-center">
-                                                            <p class="font-xs mr-30">December 4, 2020 at 3:12 pm </p>
-                                                            <a href="#" class="text-brand btn-reply">Reply <i
-                                                                    class="fi-rs-arrow-right"></i> </a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <!--single-comment -->
                                     </div>
                                 </div>
-                                <div class="col-lg-4">
-                                    <h4 class="mb-30">Customer reviews</h4>
-                                    <div class="d-flex mb-30">
-                                        <div class="product-rate d-inline-block mr-15">
-                                            <div class="product-rating" style="width:90%">
+                                <!--single-comment -->
+                                <div class="single-comment justify-content-between d-flex">
+                                    <div class="user justify-content-between d-flex">
+                                        <div class="thumb text-center">
+                                            <img src="assets/imgs/page/avatar-7.jpg" alt="">
+                                            <h6><a href="#">Ana Rosie</a></h6>
+                                            <p class="font-xxs">Since 2008</p>
+                                        </div>
+                                        <div class="desc">
+                                            <div class="product-rate d-inline-block">
+                                                <div class="product-rating" style="width:90%">
+                                                </div>
+                                            </div>
+                                            <p>Great low price and works well.</p>
+                                            <div class="d-flex justify-content-between">
+                                                <div class="d-flex align-items-center">
+                                                    <p class="font-xs mr-30">December 4, 2020 at 3:12 pm </p>
+                                                    <a href="#" class="text-brand btn-reply">Reply <i
+                                                            class="fi-rs-arrow-right"></i> </a>
+                                                </div>
                                             </div>
                                         </div>
-                                        <h6>4.8 out of 5</h6>
                                     </div>
-                                    <div class="progress">
-                                        <span>5 star</span>
-                                        <div class="progress-bar" role="progressbar" style="width: 50%;"
-                                            aria-valuenow="50" aria-valuemin="0" aria-valuemax="100">50%</div>
-                                    </div>
-                                    <div class="progress">
-                                        <span>4 star</span>
-                                        <div class="progress-bar" role="progressbar" style="width: 25%;"
-                                            aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-                                    </div>
-                                    <div class="progress">
-                                        <span>3 star</span>
-                                        <div class="progress-bar" role="progressbar" style="width: 45%;"
-                                            aria-valuenow="45" aria-valuemin="0" aria-valuemax="100">45%</div>
-                                    </div>
-                                    <div class="progress">
-                                        <span>2 star</span>
-                                        <div class="progress-bar" role="progressbar" style="width: 65%;"
-                                            aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">65%</div>
-                                    </div>
-                                    <div class="progress mb-30">
-                                        <span>1 star</span>
-                                        <div class="progress-bar" role="progressbar" style="width: 85%;"
-                                            aria-valuenow="85" aria-valuemin="0" aria-valuemax="100">85%</div>
-                                    </div>
-                                    <a href="#" class="font-xs text-muted">How are ratings calculated?</a>
                                 </div>
+                                <!--single-comment -->
+                                <div class="single-comment justify-content-between d-flex">
+                                    <div class="user justify-content-between d-flex">
+                                        <div class="thumb text-center">
+                                            <img src="assets/imgs/page/avatar-8.jpg" alt="">
+                                            <h6><a href="#">Steven Keny</a></h6>
+                                            <p class="font-xxs">Since 2010</p>
+                                        </div>
+                                        <div class="desc">
+                                            <div class="product-rate d-inline-block">
+                                                <div class="product-rating" style="width:90%">
+                                                </div>
+                                            </div>
+                                            <p>Authentic and Beautiful, Love these way more than ever expected
+                                                They are Great earphones</p>
+                                            <div class="d-flex justify-content-between">
+                                                <div class="d-flex align-items-center">
+                                                    <p class="font-xs mr-30">December 4, 2020 at 3:12 pm </p>
+                                                    <a href="#" class="text-brand btn-reply">Reply <i
+                                                            class="fi-rs-arrow-right"></i> </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--single-comment -->
                             </div>
                         </div>
-                        <!--comment form-->
-                        <div class="comment-form">
-                            <h4 class="mb-15">Add a review</h4>
-                            <div class="product-rate d-inline-block mb-30">
+                        <div class="col-lg-4">
+                            <h4 class="mb-30">Customer reviews</h4>
+                            <div class="d-flex mb-30">
+                                <div class="product-rate d-inline-block mr-15">
+                                    <div class="product-rating" style="width:90%">
+                                    </div>
+                                </div>
+                                <h6>4.8 out of 5</h6>
                             </div>
-                            <div class="row">
-                                <div class="col-lg-8 col-md-12">
-                                    <form class="form-contact comment_form" action="#" id="commentForm">
-                                        <div class="row">
-                                            <div class="col-12">
-                                                <div class="form-group">
-                                                    <textarea class="form-control w-100" name="comment" id="comment"
-                                                        cols="30" rows="9" placeholder="Write Comment"></textarea>
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <div class="form-group">
-                                                    <input class="form-control" name="name" id="name" type="text"
-                                                        placeholder="Name">
-                                                </div>
-                                            </div>
-                                            <div class="col-sm-6">
-                                                <div class="form-group">
-                                                    <input class="form-control" name="email" id="email" type="email"
-                                                        placeholder="Email">
-                                                </div>
-                                            </div>
-                                            <div class="col-12">
-                                                <div class="form-group">
-                                                    <input class="form-control" name="website" id="website" type="text"
-                                                        placeholder="Website">
-                                                </div>
-                                            </div>
-                                        </div>
+                            <div class="progress">
+                                <span>5 star</span>
+                                <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50"
+                                    aria-valuemin="0" aria-valuemax="100">50%</div>
+                            </div>
+                            <div class="progress">
+                                <span>4 star</span>
+                                <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25"
+                                    aria-valuemin="0" aria-valuemax="100">25%</div>
+                            </div>
+                            <div class="progress">
+                                <span>3 star</span>
+                                <div class="progress-bar" role="progressbar" style="width: 45%;" aria-valuenow="45"
+                                    aria-valuemin="0" aria-valuemax="100">45%</div>
+                            </div>
+                            <div class="progress">
+                                <span>2 star</span>
+                                <div class="progress-bar" role="progressbar" style="width: 65%;" aria-valuenow="65"
+                                    aria-valuemin="0" aria-valuemax="100">65%</div>
+                            </div>
+                            <div class="progress mb-30">
+                                <span>1 star</span>
+                                <div class="progress-bar" role="progressbar" style="width: 85%;" aria-valuenow="85"
+                                    aria-valuemin="0" aria-valuemax="100">85%</div>
+                            </div>
+                            <a href="#" class="font-xs text-muted">How are ratings calculated?</a>
+                        </div>
+                    </div>
+                </div>
+                <!--comment form-->
+                <div class="comment-form">
+                    <h4 class="mb-15">Add a review</h4>
+                    <div class="product-rate d-inline-block mb-30">
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-8 col-md-12">
+                            <form class="form-contact comment_form" action="#" id="commentForm">
+                                <div class="row">
+                                    <div class="col-12">
                                         <div class="form-group">
-                                            <button type="submit" class="button button-contactForm">Submit
-                                                Review</button>
+                                            <textarea class="form-control w-100" name="comment" id="comment" cols="30"
+                                                rows="9" placeholder="Write Comment"></textarea>
                                         </div>
-                                    </form>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            <input class="form-control" name="name" id="name" type="text"
+                                                placeholder="Name">
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <div class="form-group">
+                                            <input class="form-control" name="email" id="email" type="email"
+                                                placeholder="Email">
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="form-group">
+                                            <input class="form-control" name="website" id="website" type="text"
+                                                placeholder="Website">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                                <div class="form-group">
+                                    <button type="submit" class="button button-contactForm">Submit
+                                        Review</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-            </div>
-            </div>
-            <div class="banner-img banner-big wow fadeIn f-none animated mt-50">
-                <img class="border-radius-10" src="assets/imgs/banner/banner-4.webp" alt="">
-                <div class="banner-text">
-                    <!-- <h4 class="mb-15 mt-40">Repair Services</h4>
+        </div>
+        </div>
+        <div class="banner-img banner-big wow fadeIn f-none animated mt-50">
+            <img class="border-radius-10" src="assets/imgs/banner/banner-4.webp" alt="">
+            <div class="banner-text">
+                <!-- <h4 class="mb-15 mt-40">Repair Services</h4>
                                     <h2 class="fw-600 mb-20">We're an Apple <br>Authorised Service Provider</h2> -->
-                </div>
             </div>
-            </div>
-            </div>
-            </div>
-            </div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
         </section>
     </main>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+
+
+    document.getElementById('addToCartBtn').addEventListener('click', function () {
+    const variantSelect = document.getElementById('variant-select');
+    if (!variantSelect.value) {
+        Swal.fire({
+            title: 'Error',
+            text: 'Please select a variant before adding to the cart.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+        });
+        return;
+    }
+
+    const form = document.getElementById('add-to-cart-form');
+    const formData = new FormData(form);
+    const data = Object.fromEntries(formData.entries());
+
+    fetch('/cart/addItem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire({
+                    title: 'Success',
+                    text: 'Item added to cart',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                });
+
+               // Update stock dynamically
+                const selectedIndex = variantSelect.value;
+                const variants = <%- JSON.stringify(product.variants) %>;
+
+                variants[selectedIndex].stock -= parseInt(data.quantity, 10);
+                // document.getElementById('dynamic-stock').innerText = `${variants[selectedIndex].stock} Items In Stock`;
+
+                // Reset quantity input
+                document.getElementById('quantity-input').value = 1;
+            } else {
+                Swal.fire({
+                    title: 'Error',
+                    text: data.message,
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error',
+                text: 'An error occurred while adding the item to the cart.',
+                icon: 'error',
+                confirmButtonText: 'OK',
+            });
+        });
+});
+
+
+
+
         function changeImage(thumbnail) {
             const mainImage = document.getElementById('mainImage');
             mainImage.src = thumbnail.src;
@@ -479,8 +600,6 @@
             quantity = Math.max(1, quantity); // Ensure quantity is at least 1
             quantityElement.textContent = quantity;
         }
-
-
 
 
         function zoomImage(e) {
@@ -502,6 +621,23 @@
             image.style.transformOrigin = 'center center';
             image.style.transform = 'scale(1)';
         }
+
+  
+    function updateVariantDetails() {
+    const selectedVariantIndex = document.getElementById("variant-select").value;
+    const variants = <%- JSON.stringify(product.variants) %>;
+
+    const selectedVariant = variants[selectedVariantIndex];
+    if (selectedVariant) {
+        document.getElementById("dynamic-price").innerText = `₹${selectedVariant.price}`;
+        document.getElementById("dynamic-stock").innerText = `${selectedVariant.stock} Items In Stock`;
+        document.getElementById("dynamic-sku").innerText = selectedVariant.sku;
+
+        // Update the variantId in the hidden input field
+        document.getElementById("variantId").value = selectedVariant._id;
+    }
+}
+
 
 
     </script>

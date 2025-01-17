@@ -1,11 +1,13 @@
-const express=require("express")
+const express=require("express");
 const router=express.Router();
 const userController=require("../controllers/user/userController");
 const profileController = require("../controllers/user/profileController");
 const passport = require("passport");
-const {userAuth,adminAuth} = require("../middlewares/auth");
 const cartController = require("../controllers/user/cartController");
-const WishlistController = require("../controllers/user/wishlistController")
+const WishlistController = require("../controllers/user/wishlistController");
+const {userAuth,adminAuth} = require("../middlewares/auth");
+const orderController = require("../controllers/user/orderController");
+
 
 //Error Management
 router.get("/pageNotFound",userController.pageNotFound);
@@ -21,26 +23,33 @@ router.post("/verify-otp",userController.verifyOtp);
 router.post("/resend-otp",userController.resendOtp);
 router.get(
     "/google",
-    passport.authenticate("google", { scope: ["profile", "email"] })
+    passport.authenticate("google", { scope: ["profile", "email",] })
 );
 
 router.get(
     "/google/callback",
     passport.authenticate("google", { failureRedirect: "/signup" }),
     (req, res) => {
-        console.log("Redirecting after successful login");
-        res.redirect("/");
+        if (req.user) {
+            console.log("Authenticated user:", req.user);
+            req.session.user = req.user._id; // Explicitly set the user in the session
+            res.redirect("/"); 
+        } else {
+            console.error("No user found after Google login.");
+            res.redirect("/signup");
+        }
     }
 );
+
 
 
 //Home Page & Shopping Page 
 router.get("/logout",userController.logout);
 router.get("/",userController.loadHomepage);
 router.get("/shop",userController.loadShopingPage);
-router.get("/filter",userController.filterProduct);
+ router.get("/filter",userController.filterProduct);
 router.get("/filterPrice",userController.filterByPrice);
-router.post("/search",userController.searchProducts);
+ 
 
 
 //Profile Management
@@ -56,26 +65,35 @@ router.get("/change-password",profileController.changePassword);
 router.post("/change-password",profileController.changePasswordValid);
 router.post("/verify-changepassword-otp",profileController.verifyChangePassOtp);
 
+
 //Address Management 
-router.get("/addAddress",profileController.addAddress);
-router.post("/addAddress",profileController.postAddAddress);
-router.get("/editAddress",profileController.editAddress);
-router.post("/editAddress",profileController.postEditAddress);
-router.get("/deleteAddress",profileController.deleteAddress);
+router.get("/addAddress",userAuth,profileController.addAddress);
+router.post("/addAddress",userAuth,profileController.postAddAddress);
+router.get("/editAddress",userAuth,profileController.editAddress);
+router.post("/editAddress",userAuth,profileController.postEditAddress);
+router.get("/deleteAddress",userAuth,profileController.deleteAddress);
+
 
 //Cart Management
 router.get("/cart",cartController.getCartPage);
-router.post("/cart/add", cartController.addToCart);
-router.post("/cart/remove-item", cartController.removeProductFromCart);
-router.post("/cart/update-quantity", cartController.updateCartQuantity);
-router.post("/cart/clear", cartController.clearCart);
+router.post("/cart/addItem",userAuth, cartController.addToCart);
+router.post("/cart/remove-item",userAuth,cartController.removeProductFromCart);
+router.post("/update-quantity",userAuth,cartController.updateCartQuantity);
+
+
+//Order Management
+router.get("/checkout",orderController.loadCheckout);
+router.post("/orders",orderController.placeOrder);
+router.get("/orderDetails/:orderId",orderController.orderDetails)
+router.post("/cancel/:id",orderController.cancelOrder);
 
 
 //Whishlist Management
 router.get("/whishlist",WishlistController.LoadWishlist);
+router.post("/addToWishlist",WishlistController.addToWishlist);
 
 
-
-router.get("/productDetails",userController.productDetails)
+//ProductDetails Management
+router.get("/productDetails",userController.productDetails);
 
 module.exports=router

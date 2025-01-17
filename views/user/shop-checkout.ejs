@@ -1,0 +1,353 @@
+<%- include("../../views/partials/user/header") %>
+
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="index.html" rel="nofollow">Home</a>
+                    <span></span> Shop
+                    <span></span> Checkout
+                </div>
+            </div>
+        </div>
+        <section class="mt-50 mb-50">
+            <div class="container">
+                <div class="row">
+                    
+                     
+                    <div class="col-lg-6">
+                        <div class="toggle_info">
+                            <span><i class="fi-rs-label mr-10"></i><span class="text-muted">Have a coupon?</span> <a
+                                    href="#coupon" data-bs-toggle="collapse" class="collapsed"
+                                    aria-expanded="false">Click here to enter your code</a></span>
+                        </div>
+                        <div class="panel-collapse collapse coupon_form " id="coupon">
+                            <div class="panel-body">
+                                <p class="mb-30 font-sm">If you have a coupon code, please apply it below.</p>
+                                <form method="post">
+                                    <div class="form-group">
+                                        <input type="text" placeholder="Enter Coupon Code...">
+                                    </div>
+                                    <div class="form-group">
+                                        <button class="btn  btn-md" name="login">Apply Coupon</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="divider mt-50 mb-50"></div>
+                    </div>
+                </div>
+                <div class="row">
+                   
+  
+                    <div class="col-md-6">
+                        <div class="mb-25">
+                            <h4>Billing Details</h4>
+                        </div>
+                        
+                         <form method="post" id="checkout-form">
+                            <div class="form-group">
+                                <label for="address-selection"><strong>Select Address:</strong></label>
+                                <% if (addresses.length > 0) { %>
+                                    <% addresses.forEach((address, index) => { %>
+                                        <div style="margin-bottom: 15px; display: flex; align-items: center;">
+                                            <input 
+                                                type="radio" 
+                                                id="address<%= index %>" 
+                                                name="address_selection" 
+                                                value="<%= address._id %>" 
+                                                <%= index === 0 ? 'checked' : '' %> 
+                                                style="display: none;">
+                                            <label 
+                                                for="address<%= index %>" 
+                                                style="position: relative; padding-left: 30px; cursor: pointer; font-size: 16px; line-height: 20px;">
+                                                <span 
+                                                    style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; border: 2px solid #ccc; border-radius: 50%; background-color: #fff; display: inline-block;">
+                                                </span>
+                                                <%= address.fullAddress %>
+                                            </label>
+                                        </div>
+                                    <% }); %>
+                                <% } else { %>
+                                    <p>No saved addresses found. Please add a new address.</p>
+                                <% } %>
+                            </div>
+                          <!-- "Add Address" Button -->
+                            <div class="form-group">
+                                <button type="button" id="addAddressButton" class="btn btn-primary">Add New Address</button>
+                            </div>
+
+                        </form> 
+
+                    </div>
+                    
+
+                    <div class="col-md-6">
+                        <div class="order_review">
+                            <div class="mb-20">
+                                <h4>Your Orders</h4>
+                            </div>
+                            <div class="table-responsive order_table text-center">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2">Product</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% let subtotal=0; %>
+                                            <% cart.items.forEach(item=> { %>
+                                                <tr>
+                                                    <td class="image product-thumbnail">
+                                                        <img src=" /assets/login/<%=item.productImage[0] %>"
+                                                            alt="<%= item.name %>">
+                                                    </td>
+                                                    <td>
+                                                        <h5>
+                                                                <%= item.name %>
+                                                            </h5>
+                                                        <span class="product-qty">x <%= item.quantity %></span>
+                                                    </td>
+                                                    <td>₹<%= item.variant.price * item.quantity %>
+                                                    </td>
+                                                    <% subtotal +=item.variant.price * item.quantity; %>
+                                                </tr>
+                                                <% }) %>
+                                                    <tr>
+                                                        <th>SubTotal</th>
+                                                        <td class="product-subtotal" colspan="2">₹<%= subtotal %>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Shipping</th>
+                                                        <td colspan="2"><em>Free Shipping</em></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Total</th>
+                                                        <td colspan="2" class="product-subtotal">
+                                                            <span class="font-xl text-brand fw-900">₹<%= subtotal %>
+                                                                    </span>
+                                                        </td>
+                                                    </tr>
+                                    </tbody>
+                                </table>
+
+                            </div>
+                            <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+                            <div class="payment_method">
+                                <div class="mb-25">
+                                    <h5>Payment</h5>
+                                </div>
+                                <div class="payment_option">
+
+                                    <div class="custome-radio">
+                                        <input class="form-check-input" required="" type="radio" name="payment_option"
+                                            id="exampleRadios3" checked="">
+                                        <label class="form-check-label" for="exampleRadios3" data-bs-toggle="collapse"
+                                            data-target="#bankTranfer" aria-controls="bankTranfer">Cash On Delivery</label>
+                                        <div class="form-group collapse in" id="bankTranfer">
+                                            <p class="text-muted mt-5">There are many variations of passages of Lorem
+                                                Ipsum available, but the majority have suffered alteration. </p>
+                                        </div>
+                                    </div>
+
+                                    <div class="custome-radio">
+                                        <input class="form-check-input" required="" type="radio" name="payment_option"
+                                            id="exampleRadios3" checked="">
+                                        <label class="form-check-label" for="exampleRadios3" data-bs-toggle="collapse"
+                                            data-target="#bankTranfer" aria-controls="bankTranfer">Direct Bank
+                                            Transfer</label>
+                                        <div class="form-group collapse in" id="bankTranfer">
+                                            <p class="text-muted mt-5">There are many variations of passages of Lorem
+                                                Ipsum available, but the majority have suffered alteration. </p>
+                                        </div>
+                                    </div>
+                                    <div class="custome-radio">
+                                        <input class="form-check-input" required="" type="radio" name="payment_option"
+                                            id="exampleRadios4" checked="">
+                                        <label class="form-check-label" for="exampleRadios4" data-bs-toggle="collapse"
+                                            data-target="#checkPayment" aria-controls="checkPayment">Check
+                                            Payment</label>
+                                        <div class="form-group collapse in" id="checkPayment">
+                                            <p class="text-muted mt-5">Please send your cheque to Store Name, Store
+                                                Street, Store Town, Store State / County, Store Postcode. </p>
+                                        </div>
+                                    </div>
+                                    <div class="custome-radio">
+                                        <input class="form-check-input" required="" type="radio" name="payment_option"
+                                            id="exampleRadios5" checked="">
+                                        <label class="form-check-label" for="exampleRadios5" data-bs-toggle="collapse"
+                                            data-target="#paypal" aria-controls="paypal">Paypal</label>
+                                        <div class="form-group collapse in" id="paypal">
+                                            <p class="text-muted mt-5">Pay via PayPal; you can pay with your credit card
+                                                if you don't have a PayPal account.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="#" class="btn btn-fill-out btn-block mt-30">Place Order</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    <%- include("../../views/partials/user/footer") %>
+
+
+ <script>
+
+
+function uncheckOthers(clickedCheckbox) {
+    const checkboxes = document.getElementsByName('address_selection');
+    checkboxes.forEach(function (checkbox) {
+        if (checkbox !== clickedCheckbox) checkbox.checked = false;
+    });
+}
+
+document.querySelectorAll('input[name="address_selection"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        // Reset all custom radio button visuals
+        document.querySelectorAll('.radio-group span').forEach(span => {
+            span.style.backgroundColor = '#fff'; // Default background
+            span.style.borderColor = '#ccc'; // Default border
+        });
+
+        // Highlight the selected radio button
+        const selectedLabel = e.target.nextElementSibling.querySelector('span');
+        selectedLabel.style.backgroundColor = '#007bff';
+        selectedLabel.style.borderColor = '#007bff';
+    });
+});
+
+const btnFillOut = document.querySelector(".btn.btn-fill-out");
+if (btnFillOut) {
+    btnFillOut.addEventListener("click", async (e) => {
+        e.preventDefault(); // Prevent default behavior
+
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Do you want to confirm this order?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Confirm Order",
+            cancelButtonText: "Cancel Order",
+            reverseButtons: true,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                // User clicked "Confirm Order"
+                const addressId = document.querySelector('input[name="address_selection"]:checked')?.value;
+                const paymentMethod = document.querySelector('input[name="payment_option"]:checked')?.id;
+
+                if (!addressId || !paymentMethod) {
+                    Swal.fire("Error!", "Please select an address and payment method.", "error");
+                    return;
+                }
+
+                try {
+                    const response = await fetch("/api/orders/place", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ addressId, paymentMethod }),
+                    });
+
+                    const data = await response.json();
+                    if (data.message) {
+                        Swal.fire("Order Confirmed!", data.message, "success").then(() => {
+                            window.location.href = `/orders/${data.orderId}`; // Redirect to order summary page
+                        });
+                    } else {
+                        Swal.fire("Error!", data.error, "error");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire("Error!", "An error occurred while placing the order.", "error");
+                }
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                // User clicked "Cancel Order"
+                Swal.fire("Order Cancelled", "You have cancelled the order.", "info");
+            }
+        });
+    });
+}
+
+
+// function uncheckOthers(clickedCheckbox) {
+//     var checkboxes = document.getElementsByName('address_selection');
+//     checkboxes.forEach(function(checkbox) {
+//         if (checkbox !== clickedCheckbox) checkbox.checked = false;
+//     });
+// }
+
+//         document.querySelectorAll('input[name="address_selection"]').forEach(radio => {
+//             radio.addEventListener('change', (e) => {
+//                 // Reset all custom radio button visuals
+//                 document.querySelectorAll('span').forEach(span => {
+//                     span.style.backgroundColor = '#fff'; // Default background
+//                     span.style.borderColor = '#ccc'; // Default border
+//                 });
+    
+//                 // Highlight the selected radio button
+//                 const selectedLabel = e.target.nextElementSibling.querySelector('span');
+//                 selectedLabel.style.backgroundColor = '#007bff';
+//                 selectedLabel.style.borderColor = '#007bff'; 
+//         });
+    
+
+//     document.querySelector(".btn.btn-fill-out").addEventListener("click", async (e) => {
+//     e.preventDefault(); // Prevent default behavior
+
+//     Swal.fire({
+//         title: "Are you sure?",
+//         text: "Do you want to confirm this order?",
+//         icon: "warning",
+//         showCancelButton: true,
+//         confirmButtonText: "Confirm Order",
+//         cancelButtonText: "Cancel Order",
+//         reverseButtons: true,
+//     }).then(async (result) => {
+//         if (result.isConfirmed) {
+//             // User clicked "Confirm Order"
+//             const addressId = document.querySelector('input[name="address_selection"]:checked').value;
+//             const paymentMethod = document.querySelector('input[name="payment_option"]:checked').id;
+
+//             try {
+//                 const response = await fetch("/api/orders/place", {
+//                     method: "POST",
+//                     headers: {
+//                         "Content-Type": "application/json",
+//                     },
+//                     body: JSON.stringify({ addressId, paymentMethod }),
+//                 });
+
+//                 const data = await response.json();
+//                 if (data.message) {
+//                     Swal.fire("Order Confirmed!", data.message, "success").then(() => {
+//                         window.location.href = `/orders/${data.orderId}`; // Redirect to order summary page
+//                     });
+//                 } else {
+//                     Swal.fire("Error!", data.error, "error");
+//                 }
+//             } catch (error) {
+//                 console.error(error);
+//                 Swal.fire("Error!", "An error occurred while placing the order.", "error");
+//             }
+//         } else if (result.dismiss === Swal.DismissReason.cancel) {
+//             // User clicked "Cancel Order"
+//             Swal.fire("Order Cancelled", "You have cancelled the order.", "info");
+//         }
+//     });
+// });
+
+        
+    </script>
+    

@@ -59,7 +59,7 @@ const customerInfo = async (req, res) => {
       page = parseInt(req.query.page, 10); // Ensure `page` is a number
     }
 
-    const limit = 3;
+    const limit = 6;
 
     // Fetch filtered and paginated data
     const userData = await User.find({

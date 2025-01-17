@@ -1,0 +1,227 @@
+<%- include("../../views/partials/user/header") %>
+
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/" rel="nofollow">Home</a>
+                <span></span> Shop
+                <span></span> Checkout
+            </div>
+        </div>
+    </div>
+    <section class="mt-50 mb-50">
+        <div class="container">
+            <!-- Coupon Section -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="toggle_info">
+                        <span><i class="fi-rs-label mr-10"></i><span class="text-muted">Have a coupon?</span>
+                            <a href="#coupon" data-bs-toggle="collapse" class="collapsed" aria-expanded="false">
+                                Click here to enter your code
+                            </a>
+                        </span>
+                    </div>
+                    <div class="panel-collapse collapse coupon_form" id="coupon">
+                        <div class="panel-body">
+                            <p class="mb-30 font-sm">If you have a coupon code, please apply it below.</p>
+                            <form method="post">
+                                <div class="form-group">
+                                    <input type="text" placeholder="Enter Coupon Code..." class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-md btn-primary">Apply Coupon</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Divider -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="divider mt-50 mb-50"></div>
+                </div>
+            </div>
+
+            <!-- Checkout Section -->
+            <div class="row">
+                <!-- Billing Details -->
+                <div class="col-md-6">
+                    <div class="mb-25">
+                        <h4>Billing Details</h4>
+                    </div>
+                    <form method="post" id="checkout-form">
+                        <!-- Address Selection -->
+                        <div class="form-group">
+                            <label for="address-selection"><strong>Select Address:</strong></label>
+                            <% if (addresses && addresses.length > 0) { %>
+                                <% addresses.forEach((address, index) => { %>
+                                    <label for="address<%= index %>" class="radio-label">
+                                        <input
+                                            type="radio"
+                                            id="address<%= index %>"
+                                            name="address_selection"
+                                            value="<%= address._id %>"
+                                            class="radio-input"
+                                            <%= index === 0 ? 'checked' : '' %>>
+                                        <span class="radio-custom"></span>
+                                        <%= address.fullAddress %>
+                                    </label>
+                                <% }); %>
+                            <% } else { %>
+                                <p>No saved addresses found.</p>
+                                <button type="button" class="btn btn-secondary" onclick="redirectToAddressPage()">
+                                    Add New Address
+                                </button>
+                            <% } %>
+                        </div>
+
+                        <!-- Add Address Button -->
+                        <div class="form-group">
+                            <button type="button" id="addAddressButton" class="btn btn-primary"onclick="redirectToAddressPage()">
+                            Add Address
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Order Review -->
+                <div class="col-md-6">
+                    <div class="order_review">
+                        <div class="mb-20">
+                            <h4>Your Orders</h4>
+                        </div>
+                        <div class="table-responsive order_table text-center">
+                            <% if (cart.items.length > 0) { %>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2">Product</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% let subtotal = 0; %>
+                                        <% cart.items.forEach(item => { %>
+                                            <tr>
+                                                <td class="image product-thumbnail">
+                                                    <img src="/assets/login/<%= item.productImage[0] %>" alt="<%= item.name %>">
+                                                </td>
+                                                <td>
+                                                    <h5><%= item.name %></h5>
+                                                    <span class="product-qty">x <%= item.quantity %></span>
+                                                </td>
+                                                <td>₹<%= item.variant.price * item.quantity %></td>
+                                                <% subtotal += item.variant.price * item.quantity; %>
+                                            </tr>
+                                        <% }); %>
+                                        <tr>
+                                            <th>SubTotal</th>
+                                            <td colspan="2" class="product-subtotal">₹<%= subtotal %></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Shipping</th>
+                                            <td colspan="2"><em>Free Shipping</em></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Total</th>
+                                            <td colspan="2" class="product-subtotal">
+                                                <span class="font-xl text-brand fw-900">₹<%= subtotal %></span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            <% } else { %>
+                                <p>Your cart is empty. <a href="/shop">Continue Shopping</a></p>
+                            <% } %>
+                        </div>
+
+                        <!-- Payment Options -->
+                        <div class="payment_method">
+                            <div class="mb-25">
+                                <h5>Payment</h5>
+                            </div>
+                            <div class="payment_option">
+                                <% const paymentOptions = [
+                                    { id: "COD", label: "Cash On Delivery" },
+                                    { id: "bank", label: "Direct Bank Transfer" },
+                                    { id: "check", label: "Check Payment" },
+                                    { id: "paypal", label: "Paypal" }
+                                ]; %>
+                                <% paymentOptions.forEach(option => { %>
+                                    <div class="custome-radio">
+                                        <input
+                                            type="radio"
+                                            id="<%= option.id %>"
+                                            name="payment_option"
+                                            class="form-check-input"
+                                            required>
+                                        <label for="<%= option.id %>" class="form-check-label">
+                                            <%= option.label %>
+                                        </label>
+                                    </div>
+                                <% }); %>
+                            </div>
+                        </div>
+
+                        <!-- Place Order Button -->
+                        <button class="btn btn-fill-out btn-block mt-30" type="button" id="placeOrderButton">
+                            Place Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<%- include("../../views/partials/user/footer") %>
+
+<script>
+    // Redirect to Add Address Page
+    function redirectToAddressPage() {
+        return window.location.href = "/addAddress";
+    }
+
+    // Place Order Button Handler
+    document.getElementById("placeOrderButton").addEventListener("click", async (e) => {
+        e.preventDefault();
+        Swal.fire({
+            title: "Are you sure?",
+            text: "Do you want to confirm this order?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Confirm Order",
+            cancelButtonText: "Cancel Order",
+            reverseButtons: true,
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                const addressId = document.querySelector('input[name="address_selection"]:checked').value;
+                const paymentMethod = document.querySelector('input[name="payment_option"]:checked').id;
+
+                try {
+                    const response = await fetch("/orders", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ addressId, paymentMethod }),
+                    });
+                    const data = await response.json();
+                    if (data.message) {
+                        Swal.fire("Order Confirmed!", data.message, "success").then(() => {
+                            window.location.href = "/userProfile";
+                        });
+                    } else {
+                        Swal.fire("Error!", data.error, "error");
+                    }
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire("Error!", "An error occurred while placing the order.", "error");
+                }
+            } else {
+                Swal.fire("Order Cancelled", "You have cancelled the order.", "info");
+            }
+        });
+    });
+</script>

@@ -2,12 +2,51 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
+// Dynamic Variant Schema
+const variantSchema = new Schema({
+  categoryType: {
+    type: String,
+    required: true,
+    enum: ["strength", "cardio",], 
+  },
+  weight: {
+    type: Number, // For strength machines
+    required: function () {
+      return this.categoryType === "strength";
+    },
+    min: 0,
+  },
+  type: {
+    type: String, // For cardio equipment
+    enum: ["automated", "semi-automated", "manual"],
+    required: function () {
+      return this.categoryType === "cardio";
+    },
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  stock: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  sku: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+});
+
+// Main Product Schema
 const productSchema = new Schema(
   {
     productName: {
       type: String,
       required: true,
-      trim: true, // Removes leading/trailing spaces
+      trim: true,
     },
     description: {
       type: String,
@@ -25,33 +64,24 @@ const productSchema = new Schema(
     regularPrice: {
       type: Number,
       required: true,
-      min: 0, // Regular price must be non-negative
+      min: 0,
     },
     salePrice: {
       type: Number,
       required: true,
       validate: {
         validator: function (value) {
-          return value <= this.regularPrice; // Sale price cannot exceed regular price
+          return value <= this.regularPrice;
         },
         message: "Sale price cannot be greater than the regular price.",
       },
-    },
-    productOffer: {
-      type: Number, // Represented as a percentage (e.g., 10 for 10%)
-      default: 0,
-    },
-    quantity: {
-      type: Number,
-      required: true,
-      min: 0, // Ensures non-negative quantity
     },
     productImages: {
       type: [String],
       required: true,
       validate: {
         validator: function (value) {
-          return value.length > 0; // At least one image is required
+          return value.length > 0;
         },
         message: "At least one product image is required.",
       },
@@ -60,112 +90,29 @@ const productSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    offer:{
+    type:Number,
+    default:0 , 
+    },
+    offerAmount:{
+      type:Number,
+      default:0,
+    },
     status: {
       type: String,
       enum: ["available", "out of stock", "discontinued"],
       required: true,
       default: "available",
     },
+    variants: {
+      type: [variantSchema], // Store all variants dynamically
+      default: [],
+    },
   },
   { timestamps: true }
 );
 
-// Index for faster queries on category and block status
 productSchema.index({ category: 1, isBlocked: 1 });
 
 const Product = mongoose.model("Product", productSchema);
 module.exports = Product;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const mongoose=require("mongoose");
-// const {Schema}=mongoose;
-
-
-// const productSchema=new Schema({
-
-//     productName:{
-//         type:String,
-//         required:true,
-//     },
-//     discription:{
-//         type:String,
-//         required:true
-//     },
-//     brand:{
-//         type:String,
-//         required:true
-//     },
-//     category:{
-//         type:Schema.Types.ObjectId,
-//         ref:"Category",
-//         required:true
-//     },
-//     regularPrice:{
-//         type:Number,
-//         required:true
-//     },
-//     salePrice:{
-//         type:Number,
-//         required:true
-//     },
-//     productOffer:{
-//         type:Number,
-//         default:0
-//     },
-//     quantity:{
-//         type:Number,
-//         default:true
-//     },
-//     color:{
-//         type:String,
-//         required:true
-//     },
-//     productImage:{
-// type:[String],
-// required:true
-//     },
-//     isBlocked:{
-//         type:Boolean,
-//         default:false
-//     },
-//     status:{
-//         type:String,
-//         enum:["available","out of stock","discontinued"],
-//         required:true,
-//         default:"Available"
-//     },},{timestamps:true})
-
-//     const product=mongoose.model("product",productSchema)
-//     module.exports=product

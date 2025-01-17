@@ -15,6 +15,15 @@
                     <label class="form-label">Description</label>
                     <textarea name="description" class="form-control border"><%=category.description%></textarea>
                 </div>
+                <div class="mb-4">
+                    <label for="type" class="form-label">Type</label>
+                    <select name="type" class="form-control" id="type" required>
+                        <option value="" disabled selected>Select Category Type</option>
+                        <option value="strength">Strength</option>
+                        <option value="cardio">Cardio</option>
+                        <!-- Add more types as needed -->
+                    </select>
+                </div>
             </form>
         </div>
     </div>

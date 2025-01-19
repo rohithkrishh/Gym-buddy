@@ -43,7 +43,6 @@ passport.use(
 );
 
 
-
 passport.serializeUser((user, done) => {
     if (!user || !user.id) {
         return done(new Error("User object is invalid or missing ID"), null);

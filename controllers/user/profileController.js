@@ -164,58 +164,54 @@ const postNewPassword = async (req,res)=>{
     }
 }
 
-// const userProfile = async (req,res)=>{
+const userProfile = async (req,res)=>{
 
-//     try {
-//         const  userId = req.session.user;
-        
-//         const userData = await  User.findById(userId);
-//         const addressData = await Address.findOne({userId : userId});
-//         const orderData = await Order.find({ user: userId });
-//         // .populate('cartItems.product');
-//         const limit = 6;
-
-//         const skip = (page-1)*limit;
-        
-        
-//         res.render('profile1',{user : userData,userAddress : addressData,orders:orderData})
-
-//     } catch (error) {
-//         console.error("Error for retrieve profile data",error);
-//         res.redirect("/pageNotFound")
-//     }
-
-// }
-
-const userProfile = async(req,res)=>{
     try {
-        const userId = req.session.user
-        const page =parseInt(req.query.page) || 1;
-        const limit = 5;
-        const skip = (page - 1)* limit
+        const  userId = req.session.user;
+        
+        const userData = await  User.findById(userId);
+        const addressData = await Address.findOne({userId : userId});
+        const orderData = await Order.find({ user: userId }).populate('cartItems.product');
+        
+        
+        res.render('profile',{user : userData,userAddress : addressData,orders:orderData})
 
-        const userData = await User.findById(userId)
-        const addressData = await Address.findOne({userId:userId})
+    } catch (error) {
+        console.error("Error for retrieve profile data",error);
+        res.redirect("/pageNotFound")
+    }
 
-        const orderData = await Order.find({userId:userId}).sort({createdAt:-1}).skip(skip).limit(limit).exec()
-        const totalOrders =await Order.countDocuments({userId:userId})
-        const totaLPages = Math.ceil(totalOrders / limit)
+}
 
-        console.log("orders : ",totalOrders,"pages",totaLPages);
+// const userProfile = async(req,res)=>{
+//     try {
+//         const userId = req.session.user
+//         const page =parseInt(req.query.page) || 1;
+//         const limit = 5;
+//         const skip = (page - 1)* limit
+
+//         const userData = await User.findById(userId)
+//         const addressData = await Address.findOne({userId:userId})
+
+//         const orderData = await Order.find({userId:userId}).populate('cartItems.product').sort({createdAt:-1}).skip(skip).limit(limit).exec()
+//         const totalOrders =await Order.countDocuments({userId:userId})
+//         const totaLPages = Math.ceil(totalOrders / limit)
+
+//         console.log("orders : ",totalOrders,"pages",totaLPages);
 
         
-        res.render("profile1",{
-            user:userData,
-            userAddress:addressData,
-            orders:orderData,
-            totalPages:totaLPages,
-            currentPage:page
-        })
-    } catch (error) {
-        console.error("Error in fetching user profile",error);
-        res.redirect("/pageNotFound")   
-    }
-}
+//         res.render("profile1",{
+//             user:userData,
+//             userAddress:addressData,
+//             orders:orderData,
+//             totalPages:totaLPages,
+//             currentPage:page
+//         })
+//     } catch (error) {
+//         console.error("Error in fetching user profile",error);
+//         res.redirect("/pageNotFound")   
+//     }
+// }
 
 
 const changeEmail = async (req,res)=>{

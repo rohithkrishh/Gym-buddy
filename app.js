@@ -61,7 +61,7 @@
 
 const express = require('express');
 const app = express();
-require('dotenv').config(); // Load environment variables
+require('dotenv').config(); 
 const path = require('node:path');
 const session = require('express-session');
 const passport = require('./config/passport');
@@ -96,10 +96,11 @@ app.use(passport.session());
 
 app.use((req, res, next) => {
     res.locals.user = req.user || null;
-    // console.log("Session user:", req.session.user);
-    // console.log("Authenticated user:", req.user);
+    
     next();
 });
+
+
 
 app.set("views", [path.join(__dirname, "views/user"), path.join(__dirname, "views/admin")]);
 app.set('view engine', 'ejs');

@@ -132,7 +132,8 @@
                                                                 <th>RePay</th>  
                                                             </tr>
                                                         </thead>
-                                                        <tbody>
+
+                                                        <!-- <tbody>
                                                             <% if (orders) { %>   
                                                                 <% orders.forEach(order => { %> 
                                                                     <tr>
@@ -144,7 +145,7 @@
                                                         
                                                                         <td><a href="/orderDetails/<%= order._id %>" class="btn-small d-block">View</a></td>
                                                         
-                                                                        <!-- RePay Button for Failed Payment -->
+                                                                        <!-- RePay Button for Failed Payment ----
                                                                         <% if (order.paymentStatus === "Failed" && order.orderStatus !== "Cancelled") { %>    
                                                                             <td>
                                                                                 <% if (userAddress) { %>   
@@ -153,7 +154,7 @@
                                                                             </td>
                                                                         <% } %>    
                                                         
-                                                                        <!-- Red Button for Cancelled Orders -->
+                                                                        <!-- Red Button for Cancelled Orders --
                                                                         <% if (order.paymentStatus === "Failed" && order.orderStatus === "Cancelled") { %>
                                                                             <td>
                                                                                 <button class="repay-btn faded-btn" disabled>Repay</button>
@@ -165,7 +166,31 @@
                                                             <% } else { %> 
                                                                 <div>Empty... Please purchase anything...</div>
                                                             <% } %>    
+                                                        </tbody> -->
+
+
+                                                        <tbody>
+                                                            <% if (orders && orders.length > 0) { %>
+                                                                <% orders.forEach(item => { %>
+                                                                  <%item.cartItems.forEach(product=>{%>
+                                                                    <tr>
+                                                                        <td><%=product._id %></td>
+                        
+                                                                        <td><%= item.orderStatus %></td>
+                                                                        <td>₹<%= item.finalPrice.toFixed(2) %></td>
+                                                                        <td>
+                                                                            <a href="/orderDetails/<%= item._id %>" class="btn-small">View</a>
+                                                                        </td>
+                                                                    </tr>
+                                                                <%})%>
+                                                             <%  }); %>
+                                                            <% } else { %>
+                                                                <tr>
+                                                                    <td colspan="4" class="text-center">No orders found.</td>
+                                                                </tr>
+                                                            <% } %>
                                                         </tbody>
+
                                                         
                                                     </table>
                                                 </div>

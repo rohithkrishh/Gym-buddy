@@ -200,11 +200,13 @@
                             <ul>
                                 
                                 <% if (locals.user) { %>
-                                    <li>
-                                        <div class="dropdown">
+                                    <li>                                       
+                                      <div class="dropdown">
+                                           
                                             <a href="#" class="sign-in-link">
                                                 <%= locals.user.name %>
                                             </a>
+                                                                                  
                                             <div class="dropdown-content">
                                                 <a href="/userProfile">Profile</a>
                                                 <a href="logout">Logout</a>
@@ -230,24 +232,13 @@
                     </div>
                     <div class="header-right">
                          <div class="search-style-2">
-                            <!-- <form action="#">
-                                <select class="select-active">
-                                    <option>All Categories</option>
-                                    <option></option>
-                                    <option>Men's</option>
-                                    <option>Cellphones</option>
-                                    <option>Computer</option>
-                                    <option>Electronics</option>
-
-                                </select>
-                                <input type="text" placeholder="Search for items...">
-                            </form> -->
+                           
                         </div> 
                         <div class="header-action-right">
                             <div class="header-action-2">
                                 <div class="header-action-icon-2">
                                     <a href="/whishlist">
-                                        <img class="svgInject" alt="Evara" src="assets/imgs/theme/icons/icon-heart.svg">
+                                        <img class="svgInject" alt="heart" src="assets/imgs/theme/icons/icon-heart.svg">
                                         <!-- <span class="pro-count blue">4</span> -->
                                     </a>
                                 </div>
@@ -261,6 +252,13 @@
                                 <div class="header-action-icon-2">
                                     <a href="/wallet">
                                         <img class="svgInject" alt="wallet" src="assets/imgs/theme/icons/wallet.png">
+                                        <!-- <span class="pro-count blue">4</span> -->
+                                    </a>
+                                </div>
+
+                                <div class="header-action-icon-2">
+                                    <a href="/coupon">
+                                        <img class="svgInject" alt="coupon" src="assets/imgs/theme/icons/coupon.png">
                                         <!-- <span class="pro-count blue">4</span> -->
                                     </a>
                                 </div>

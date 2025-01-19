@@ -82,10 +82,12 @@ router.post("/update-quantity",userAuth,cartController.updateCartQuantity);
 
 
 //Order Management
-router.get("/checkout",orderController.loadCheckout);
-router.post("/orders",orderController.placeOrder);
-router.get("/orderDetails/:orderId",orderController.orderDetails)
-router.post("/cancel/:id",orderController.cancelOrder);
+router.get("/checkout",userAuth,orderController.loadCheckout);
+router.post("/place-order",userAuth,orderController.placeOrder);
+router.get("/orderDetails/:orderId",userAuth,orderController.orderDetails)
+router.post("/cancel/:id",userAuth,orderController.cancelOrder);
+router.post("/create-order",userAuth,orderController.razorpayCreatOrder);
+router.post("/verify-payment",userAuth,orderController.varifyPayment);
 
 
 //Whishlist Management

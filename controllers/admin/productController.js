@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Product = require("../../models/productSchema");
 const Category = require("../../models/categorySchema");
 const Brand = require("../../models/brandSchema");
@@ -270,10 +271,11 @@ const getEditProduct = async (req, res) => {
         const product = await Product.findOne({ _id: id });
         const category = await Category.find({});
         const brand = await Brand.find({});
-        res.render("edit-product", {
-            product: product,
+        res.render("edit-productsss", {
+            product,
             cat: category,
             brand: brand,
+            variants: product.variants || [], 
         });
     } catch (error) {
         console.error(error);
@@ -282,168 +284,147 @@ const getEditProduct = async (req, res) => {
 };
 
 
-// const editProduct = async (req, res) => {
-//     try {
-//         const id = req.params.id;
-//         console.log("Editing Product ID:", id);
-
-//         const product = await Product.findOne({ _id: id });
-//         if (!product) {
-//             return res.status(404).json({ error: "Product not found." });
-//         }
-
-//         const data = req.body;
-//         console.log("Updated Data:", data);
-
-//         // Check for duplicate product name
-//         const existingProduct = await Product.findOne({
-//             productName: data.productName,
-//             _id: { $ne: id },
-//         });
-//         if (existingProduct) {
-//             return res.status(400).json({ error: "Product already exists. Please use a different name." });
-//         }
-
-//         // Handle images
-//         const image = [];
-//         if (req.files && req.files.length > 0) {
-//             for (let file of req.files) {
-//                 image.push(file.filename);
-//             }
-//         }
-
-//         // Parse and validate variants
-//         if (data.variants && Array.isArray(data.variants)) {
-//             updatedVariants = data.variants.map((variant) => {
-//                 // Start with the existing variant from the database
-//                 const existingVariant = product.variants.find((v) => v.sku === variant.sku) || {};
-        
-//                 // Build the updated variant
-//                 const updatedVariant = {
-//                     ...existingVariant, // Retain existing values
-//                     price: parseFloat(variant.price) || existingVariant.price,
-//                     stock: parseInt(variant.stock, 10) || existingVariant.stock,
-//                     sku: variant.sku.trim(),
-//                 };
-        
-//                 // Dynamically handle fields based on categoryType
-//                 if (product.categoryType === "strength") {
-//                     updatedVariant.weight = parseFloat(variant.weight) || existingVariant.weight;
-//                 } else if (product.categoryType === "cardio") {
-//                     updatedVariant.type = variant.type || existingVariant.type;
-//                 }
-        
-//                 return updatedVariant;
-//             });
-//         } else {
-//             return res.status(400).json({ error: "Variants are required and must be an array." });
-//         }
-        
-
-//         // Prepare update fields
-//         const updateFields = {
-//             productName: data.productName,
-//             description: data.description,
-//             brand: data.brand,
-//             salePrice: parseFloat(data.salePrice) || null,
-//             variants: updatedVariants,
-//         };
-
-//         if (image.length > 0) {
-//             updateFields.$push = { productImages: { $each: image } };
-//         }
-
-//         // Update the product
-//         await Product.findByIdAndUpdate(id, updateFields, { new: true });
-//         res.redirect("/admin/products");
-//     } catch (error) {
-//         console.error("Error updating product:", error);
-//         res.redirect("/pagenotfound");
-//     }
-// };
 
 const editProduct = async (req, res) => {
     try {
-        const productId = req.params.id;
-        console.log("Editing Product ID:", productId);
-
-        // Fetch the existing product
-        const product = await Product.findById(productId);
-        if (!product) {
-            return res.status(404).json({ error: "Product not found." });
+        const id = req.params.id;
+      
+        // Validate product ID
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid product ID" });
         }
 
-        const updatedData = req.body;
+        const product = await Product.findById(id);
+        if (!product) {
+            return res.status(404).json({ error: "Product not found" });
+        }
+
+        const data = req.body;
+
+       
+
+        // Check for duplicate product name
+        const existingProduct = await Product.findOne({
+            productName: data.productName,
+            _id: { $ne: id },
+        });
+
+        if (existingProduct) {
+            return res.status(400).json({ error: "Product with this name already exists" });
+        }
+
+        // Handle and validate category ID
+        const category = data.category ? data.category.trim() : null;
+      
+
+        if (category && !mongoose.Types.ObjectId.isValid(category)) {
+            return res.status(400).json({ error: "Invalid category ID" });
+        }
+
         
 
-        // Check for duplicate product name (excluding the current product)
-        const duplicateProduct = await Product.findOne({
-            productName: updatedData.productName,
-            _id: { $ne: productId },
-        });
-        if (duplicateProduct) {
-            return res.status(400).json({ error: "Product with this name already exists. Please choose a different name." });
-        }
+        // Validate and parse variants
+        const variants = [];
+        if (data.variants) {
+            for (const variant of data.variants) {
+                const { categoryType, weight, type, price, stock, sku } = variant;
 
-        // Handle uploaded images
-        let updatedImages = product.productImages || [];
-        if (req.files && req.files.length > 0) {
-            const uploadedImages = req.files.map((file) => file.filename);
-            updatedImages = [...updatedImages, ...uploadedImages];
-        }
-
-        // Parse and validate variants
-        let updatedVariants = [];
-        if (updatedData.variants && Array.isArray(updatedData.variants)) {
-            updatedVariants = updatedData.variants.map((variant) => {
-                const existingVariant = product.variants.find((v) => v.sku === variant.sku) || {};
-                console.log("dhdhhhhhhhhhhhhhhhhhhhhhhhh",existingVariant);
-                const updatedVariant = {
-                    ...existingVariant, // Keep existing variant data
-                    price: parseFloat(variant.price) || existingVariant.price,
-                    stock: parseInt(variant.stock, 10) || existingVariant.stock,
-                    sku: variant.sku.trim(),
-                };
-
-                // Handle category-specific fields
-                if (variant.categoryType === "strength") {
-                    updatedVariant.weight = parseFloat(variant.weight) || existingVariant.weight;
-                } else if (variant.categoryType === "cardio") {
-                    updatedVariant.type = variant.type || existingVariant.type;
+                // Validate categoryType
+                if (!["strength", "cardio"].includes(categoryType)) {
+                    return res.status(400).json({ error: "Invalid category type for variant." });
                 }
-                console.log("_______________",updatedVariant);
 
-                return updatedVariant;
-            });
-        } else {
-            return res.status(400).json({ error: "Variants are required and must be an array." });
+                // Ensure required fields are present based on categoryType
+                if (
+                    (categoryType === "strength" && !weight) ||
+                    (categoryType === "cardio" && !type) ||
+                    !price ||
+                    !stock ||
+                    !sku
+                ) {
+                    return res.status(400).json({
+                        error: "Missing required fields for variant.",
+                    });
+                }
+
+                // Add to the variants array
+                variants.push({
+                    categoryType,
+                    weight: categoryType === "strength" ? parseFloat(weight) : undefined,
+                    type: categoryType === "cardio" ? type : undefined,
+                    price: parseFloat(price),
+                    stock: parseInt(stock),
+                    sku,
+                });
+            }
         }
 
-        // Prepare the fields to update
+
+                   console.log("jdhkjhfihdhf",variants);
+
+        // Process images if any
+        const images = [];
+        if (req.files && req.files.length > 0) {
+            for (let i = 0; i < req.files.length; i++) {
+                images.push(req.files[i].filename);
+            }
+        }
+
+
+        //  update fields with explicit ObjectId casting for category
         const updateFields = {
-            productName: updatedData.productName,
-            description: updatedData.description,
-            brand: updatedData.brand,
-            salePrice: parseFloat(updatedData.salePrice) || null,
-            variants: updatedVariants,
-            productImages: updatedImages,
+            productName: data.productName,
+            description: data.description,
+            brand: data.brand,
+            regularPrice: parseFloat(data.regularPrice),
+            salePrice: parseFloat(data.salePrice),
+
+            ...(category && { category:  new mongoose.Types.ObjectId(category) }),
+            ...(variants.length > 0 && { variants }),
         };
 
-        // Update the product in the database
-        const updatedProduct = await Product.findByIdAndUpdate(
-            productId,
-            updateFields,
-            { new: true }
-        );
+        // Update product in the database
+        if (images.length > 0) {
+            await Product.findByIdAndUpdate(
+                id,
+                { ...updateFields, $push: { productImages: { $each: images } } },
+                { new: true }
+            );
+        } else {
+            await Product.findByIdAndUpdate(id, updateFields, { new: true });
+        }
 
-        console.log("Product updated successfully:", updatedProduct);
         res.redirect("/admin/products");
     } catch (error) {
-        console.error("Error updating product:", error);
-        res.status(500).redirect("/pagenotfound");
+        console.error(error);
+        res.redirect(`/pageerror?message=${encodeURIComponent(error.message)}`);
     }
 };
 
+
+
+const deleteSingleImage = async(req,res)=>{
+
+try {
+
+    const {imageNameToServer,productIdToServer} = req.body;
+    const product = await Product.findByIdAndUpdate(productIdToServer,{$pull:{productImages:imageNameToServer}},{new:true});
+    const imagePath = path.join("public","assets","login",imageNameToServer);
+    if(fs.existsSync(imagePath)){
+        await fs.unlinkSync(imagePath);
+        console.log(`Image ${imageNameToServer} deleted successfully`);
+    }else{
+        console.log(`Image ${imageNameToServer} not found`);
+    }
+    
+    res.send({status:true});
+
+} catch (error) {
+    res.redirect("/admin/pageerror")
+}
+
+
+}
 
 
 
@@ -457,5 +438,7 @@ module.exports = {
     editProduct,
     blockProduct,
     unblockProduct,
+    deleteSingleImage,
+
   
 }

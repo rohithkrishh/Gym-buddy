@@ -77,12 +77,7 @@
       </div>
     </div>
     <header class="card-header text-center mb-20">
-      <form action="/admin/category/" method="get" class="d-inline">
-        <div class="input-group input-group-sm border border-1 border-grey rounded-pill" style="width: 500px; margin-left: 230px">
-          <input type="text" class="form-control border-0 rounded-pill mt-3" placeholder="Search categories" name="search"/>
-          <button class="btn" type="submit">Search</button>
-        </div>
-      </form>
+     
     </header>
     <div class="card">
       <div class="card-body">
@@ -156,11 +151,20 @@
                       <%}%>
                     </td>
                     <td class="text-start">
-                      <%if(category.isListed){%>
-                      <span class="badge rounded-pill alert-success" style="width: 60px">Listed</span>
-                      <%}else{%>
-                      <span class="badge rounded-pill alert-danger" style="width: 60px">Unlisted</span>
-                      <%}%>
+                      <% if (category.isListed) { %>
+                        <span 
+                          class="badge rounded-pill" 
+                          style="width: 60px; background-color: #28a745; color: white; font-size: 12px; text-align: center; padding: 5px;">
+                          Listed
+                        </span>
+                      <% } else { %>
+                        <span 
+                          class="badge rounded-pill" 
+                          style="width: 60px; background-color: #dc3545; color: white; font-size: 12px; text-align: center; padding: 5px;">
+                          Unlisted
+                        </span>
+                      <% } %>
+                      
                     </td>
                     <td class="text-start">
                       <%if(category.isListed){%>

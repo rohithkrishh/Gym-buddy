@@ -236,7 +236,8 @@
                     <th>Image</th>
                     <th>Quantity</th>
                     <th>Price</th>
-                    <th>Total</th>
+                    <th>Total Price</th>
+                   
                 </tr>
             </thead>
             <tbody>
@@ -248,12 +249,20 @@
                                 style="width: 50px; height: 50px; border-radius: 50%;">
                         </td>
                         <td data-label="Quantity"><%= item.quantity %></td>
-                        <td data-label="Price">₹<%= item.price.toFixed(2) %></td>
-                        <td data-label="Total">₹<%= (item.quantity * item.price).toFixed(2) %></td>
+                        <td data-label="Price">₹<%= item.salePrice.toFixed(2) %></td>
+                        <td data-label="Total">₹<%= item.salePrice*item.quantity %></td>
+                        
                     </tr>
-                <% }); %>
             </tbody>
+            
+            <% }); %>
         </table>
+        <tr>
+            <td data-label="Total"> Discount : ₹<%= order.discount %></td>
+        </tr>
+        <tr>
+            <td data-label="Total">Grand Total : ₹<%= order.finalPrice %></td>
+        </tr>
 
         <h2>Shipping Address</h2>
         <p>
@@ -332,7 +341,11 @@
                     confirmButtonText: 'Return Product'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        fetch(`/return/${orderId}`, { method: 'POST' })
+                        fetch('/return-order', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ orderId })
+                        })
                             .then(response => {
                                 if (response.ok) {
                                     Swal.fire('Returned!', 'Your order has been returned.', 'success')

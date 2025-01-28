@@ -2,43 +2,87 @@ const mongoose = require("mongoose");
 
 const {Schema} = mongoose
 
-const couponSchema = new Schema({
+// const couponSchema = new Schema({
 
-    name:{
-        type:String,
-        required:true,
-        unique:true
+//     name:{
+//         type:String,
+//         required:true,
+//         unique:true
+//     },
+//     createon:{
+//         type:Date,
+//         default:Date.now,
+//         required:true
+//     },
+//     expireOn:{
+//         type:Date,
+//         required:true
+//     },
+//     offerPrice:{
+//         type:Number,
+//         required:true
+//     },
+//     minimumPrice:{
+//        type:Number,
+//        required:true
+//     },
+//     isList:{
+//         type:Boolean,
+//         default:true
+//     },
+//     UsageLimit:{
+//         type:Number,
+//         required:false
+//     },
+//     userId:[{
+//         type:mongoose.Schema.Types.ObjectId,
+//         ref:"User"
+//     }]
+// })
+
+
+const couponSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+        unique: true
     },
-    createon:{
-        type:Date,
-        default:Date.now,
-        required:true
+    createdOn: {
+        type: Date,
+        default: Date.now,
+        required: true
     },
-    expireOn:{
-        type:Date,
-        required:true
+    expireOn: {
+        type: Date,
+        required: true
     },
-    offerPrice:{
-        type:Number,
-        required:true
+    offerType: {
+        type: String,
+        enum: ['flat', 'percentage'], // New field
+        required: true
     },
-    minimumPrice:{
-       type:Number,
-       required:true
+    offerValue: {
+        type: Number, // Dynamic: Can be flat amount or percentage
+        required: true
     },
-    isList:{
-        type:Boolean,
-        default:true
+    minimumPrice: {
+        type: Number,
+        required: true
     },
-    UsageLimit:{
-        type:Number,
-        required:false
+    isList: {
+        type: Boolean,
+        default: true
     },
-    userId:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User"
+    usageLimit: {
+        type: Number,
+        required: false
+    },
+    userId: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
     }]
-})
+});
+
 
 const Coupon = mongoose.model("Coupon", couponSchema)
 

@@ -16,7 +16,7 @@ const cartSchema = new Schema({
             },
             variantId: {
                 type: Schema.Types.ObjectId,
-                ref: "Product.variants", // Assumes variants are part of the Product schema
+                ref: "Product.variants", 
                 required: true
             },
             // variantDetails: {
@@ -29,18 +29,18 @@ const cartSchema = new Schema({
                 min: 1,
                 default: 1
             },
-            price: {
-                type: Number, // Store price of the product at the time it was added to cart
+            salePrice: {
+                type: Number, 
                 required: true
             }
         }
     ],
     totalItems: {
-        type: Number, // Total number of items in the cart
+        type: Number, 
         default: 0
     },
     totalPrice: {
-        type: Number, // Total price of all items in the cart
+        type: Number, 
         default: 0
     },
     createdOn: {
@@ -56,7 +56,7 @@ const cartSchema = new Schema({
 // Middleware to calculate totals before saving
 cartSchema.pre("save", function (next) {
     this.totalItems = this.items.reduce((acc, item) => acc + item.quantity, 0);
-    this.totalPrice = this.items.reduce((acc, item) => acc + item.quantity * item.price, 0);
+    this.totalPrice = this.items.reduce((acc, item) => acc + item.quantity * item.salePrice, 0);
     this.updatedOn = Date.now();
     next();
 });

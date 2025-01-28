@@ -7,6 +7,7 @@ const cartController = require("../controllers/user/cartController");
 const WishlistController = require("../controllers/user/wishlistController");
 const {userAuth,adminAuth} = require("../middlewares/auth");
 const orderController = require("../controllers/user/orderController");
+const walletController = require("../controllers/user/walletController");
 
 
 //Error Management
@@ -84,15 +85,25 @@ router.post("/update-quantity",userAuth,cartController.updateCartQuantity);
 //Order Management
 router.get("/checkout",userAuth,orderController.loadCheckout);
 router.post("/place-order",userAuth,orderController.placeOrder);
-router.get("/orderDetails/:orderId",userAuth,orderController.orderDetails)
-router.post("/cancel/:id",userAuth,orderController.cancelOrder);
+router.get("/orderDetails/:orderId",userAuth,orderController.orderDetails);
 router.post("/create-order",userAuth,orderController.razorpayCreatOrder);
-router.post("/verify-payment",userAuth,orderController.varifyPayment);
+router.post("/verify-payment",userAuth,orderController.verifyPayment);
+router.post("/cancel/:id",userAuth,orderController.cancelOrder);
+router.post("/return-order",userAuth,orderController.returnOrder);
+
+//Wallet Management
+router.get("/wallet",userAuth,walletController.getWallet);
+router.get("/balance/:userId",userAuth,walletController.getWalletBalance);
+router.post("/wallet/add-money",userAuth,walletController.addMoneyToWallet);
 
 
 //Whishlist Management
 router.get("/whishlist",WishlistController.LoadWishlist);
 router.post("/addToWishlist",WishlistController.addToWishlist);
+
+//Coupon Management
+router.post("/apply-coupon",orderController.verifyCoupon);
+
 
 
 //ProductDetails Management

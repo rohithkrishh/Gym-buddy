@@ -53,13 +53,9 @@ const customerInfo = async (req, res) => {
     if (req.query.search) {
       search = req.query.search;
     }
+const page = req.query.page || 1 ;
+const limit = 6;
 
-    let page = 1;
-    if (req.query.page) {
-      page = parseInt(req.query.page, 10); // Ensure `page` is a number
-    }
-
-    const limit = 6;
 
     // Fetch filtered and paginated data
     const userData = await User.find({
@@ -87,10 +83,10 @@ const customerInfo = async (req, res) => {
 
     // Render the EJS template with the data
     res.render("customers", {
-      data: userData, // Customers data
-      totalPages, // Total number of pages
-      currentPage: page, // Current page
-      search, // Current search query
+      data: userData, 
+      totalPages,
+      currentPage: page, 
+      search, 
     });
   } catch (error) {
     console.error("Error fetching customer information:", error);

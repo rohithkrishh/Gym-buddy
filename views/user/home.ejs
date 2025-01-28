@@ -25,31 +25,14 @@
                         <a class="categori-button-active-2" href="#">
                             <span class="fi-rs-apps"></span> Browse Categories
                         </a>
-                        <!-- <div class="categori-dropdown-wrap categori-dropdown-active-small">
-                            <ul>
-                                <li><a href="shop-grid-right.html"><i class="evara-font-dress"></i>Women's Clothing</a></li>
-                                <li><a href="shop-grid-right.html"><i class="evara-font-tshirt"></i>Men's Clothing</a></li>
-                                <li> <a href="shop-grid-right.html"><i class="evara-font-smartphone"></i> Cellphones</a></li>
-                                <li><a href="shop-grid-right.html"><i class="evara-font-desktop"></i>Computer & Office</a></li>
-                                <li><a href="shop-grid-right.html"><i class="evara-font-cpu"></i>Consumer Electronics</a></li>
-                                <li><a href="shop-grid-right.html"><i class="evara-font-home"></i>Home & Garden</a></li>
-                                <li><a href="shop-grid-right.html"><i class="evara-font-high-heels"></i>Shoes</a></li>
-                                <li><a href="shop-grid-right.html"><i class="evara-font-teddy-bear"></i>Mother & Kids</a></li>
-                                <li><a href="shop-grid-right.html"><i class="evara-font-kite"></i>Outdoor fun</a></li>
-                            </ul>
-                        </div> -->
+                  
                     </div>
-                    <!-- mobile menu start -->
+                   
                     <nav>
                         <ul class="mobile-menu">
                             <li class="menu-item-has-children"><span class="menu-expand"></span><a
                                     href="home.ejs">Home</a>
-                                <!-- <ul class="dropdown">
-                                    <li><a href="index.html">Home 1</a></li>
-                                    <li><a href="index-2.html">Home 2</a></li>
-                                    <li><a href="index-3.html">Home 3</a></li>
-                                    <li><a href="index-4.html">Home 4</a></li>
-                                </ul> -->
+                               
                             </li>
                             <li class="menu-item-has-children"><span class="menu-expand"></span><a
                                     href="shop-grid-right.html">shop</a>
@@ -305,77 +288,102 @@
                 <div class="tab-content wow fadeIn animated" id="myTabContent">
                     <div class="tab-pane fade show active" id="tab-one" role="tabpanel" aria-labelledby="tab-one">
                         <div class="row product-grid-4">
-                            <% for (let i=0; i < products.length; i++) { %>
-                                <div class="col-lg-3 col-md-4 col-12 col-sm-6">
-                                    <div class="product-cart-wrap mb-30">
-                                        <div class="product-img-action-wrap">
-                                            <div class="product-img product-img-zoom">
-                                                <a href="/productDetails?id=<%= products[i]._id %>">
-                                                    <img class="default-img"
-                                                        src="/assets/login/<%= products[i].productImages[0] %>"
-                                                        alt="<%= products[i].productName %>">
-
-                                                </a>
+                            
+                                <% for (let i = 0; i < products.length; i++) { %>
+                                    <div class="col-lg-3 col-md-4 col-12 col-sm-6">
+                                        <div class="product-cart-wrap mb-30">
+                                            <div class="product-img-action-wrap">
+                                                <div class="product-img product-img-zoom">
+                                                    <a href="/productDetails?id=<%= products[i]._id %>">
+                                                        <img class="default-img"
+                                                            src="/assets/login/<%= products[i].productImages && products[i].productImages[0] %>"
+                                                            alt="<%= products[i].productName || 'Product Image' %>">
+                                                    </a>
+                                                </div>
+                                                <div class="product-action-1">
+                                                    <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal" 
+                                                       data-bs-target="#quickViewModal" onclick="openQuickView('<%= products[i]._id %>')">
+                                                        <i class="fi-rs-eye"></i>
+                                                    </a>
+                                                    <a aria-label="Add To Wishlist" class="action-btn hover-up" 
+                                                       onclick="addToWishlist('<%= products[i]._id %>')">
+                                                       <i class="fi-rs-heart"></i>
+                                                    </a>
+                                                </div>
+                                                <div class="product-badges product-badges-position product-badges-mrg">
+                                                    <span class="hot">Hot</span>
+                                                </div>
                                             </div>
-                                            <div class="product-action-1">
-                                                <a aria-label="Quick view" class="action-btn hover-up"
-                                                    data-bs-toggle="modal" data-bs-target="#quickViewModal">
-                                                    <i class="fi-rs-eye"></i>
-                                                </a>
-                                                <a aria-label="Add To Wishlist" class="action-btn hover-up"
-                                                onclick="addToWishlist('<%=products[i]._id%>')"><i class="fi-rs-heart"></i></a>
-                                            </div>
-                                            <div class="product-badges product-badges-position product-badges-mrg">
-                                                <span class="hot">Hot</span>
-                                            </div>
-                                        </div>
-                                        <div class="product-content-wrap">
-                                            <div class="product-category">
-                                                <a href="shop-grid-right.html">
-                                                    <%= products[i].brand %>
-                                                </a>
-                                            </div>
-                                            <h2><a href="shop-product-right.html">
-                                                    <%= products[i].productName %>
-                                                </a></h2>
-                                                <div class="rating-result" title="">
-                                              
+                                            <div class="product-content-wrap">
+                                                <div class="product-category">
+                                                    <a href="shop-grid-right.html">
+                                                        <%= products[i].brand || 'Brand Name' %>
+                                                    </a>
+                                                </div>
+                                                <h2>
+                                                    <a href="/productDetails?id=<%= products[i]._id %>">
+                                                        <%= products[i].productName || 'Product Name' %>
+                                                    </a>
+                                                </h2>
+                                                <div class="rating-result">
                                                     <% 
-                                                    const productOffer = products[i].offer || 0; // Product-specific offer
-                                                    const categoryOffer = products[i].category.categoryOffer || 0; // Category-specific offer
-                                                    const higherOffer = Math.max(productOffer, categoryOffer); // Get the higher offer
-                                                
-                                                    // Calculate the sale price based on the higher offer
-                                                    const salePrice = Math.round(products[i].regularPrice - (products[i].regularPrice * higherOffer / 100));
+                                                    // Calculate the best price among all variants
+                                                    let highestOffer = 0;
+                                                    let lowestSalePrice = null;
+                                    
+                                                    if (products[i].variants && products[i].variants.length > 0) {
+                                                        for (let j = 0; j < products[i].variants.length; j++) {
+                                                            const variant = products[i].variants[j];
+                                                            const variantSalePrice = variant.salePrice || 0;
+                                                            const variantRegularPrice = variant.regularPrice || 0;
+                                                            const productOffer = products[i].offer || 0;
+                                                            const categoryOffer = products[i].category && products[i].category.categoryOffer || 0;
+                                    
+                                                            // Calculate the higher offer between product and category
+                                                            highestOffer = Math.max(productOffer, categoryOffer);
+                                    
+                                                            // Apply the highest offer to the regular price
+                                                            const calculatedSalePrice = Math.round(
+                                                                variantRegularPrice - (variantRegularPrice * highestOffer / 100)
+                                                            );
+                                    
+                                                            // Determine the lowest sale price among all variants
+                                                            if (lowestSalePrice === null || calculatedSalePrice < lowestSalePrice) {
+                                                                lowestSalePrice = calculatedSalePrice;
+                                                            }
+                                                        }
+                                                    }
                                                     %>
-                                                
-                                        
-                                                    <% if (higherOffer > 0) { %>
+                                                    <% if (highestOffer > 0) { %>
                                                         <span class="save-price font-md color3 ml-15">
-                                                            <%= higherOffer %>% Off
+                                                            <%= highestOffer %>% Off
                                                         </span>
                                                     <% } %>
-                                                
                                                 </div>
                                                 <div class="product-price">
                                                     <span>
-                                                        <%= salePrice %>
+                                                        <% if (lowestSalePrice !== null) { %>
+                                                            ₹<%= lowestSalePrice %>
+                                                        <% } else { %>
+                                                            Price Unavailable
+                                                        <% } %>
                                                     </span>
-                                                    <span class="old-price">
-                                                        <%= products[i].regularPrice %>
-                                                    </span>
+                                                    <% if (products[i].variants && products[i].variants.length > 0) { %>
+                                                        <span class="old-price">
+                                                            ₹<%= Math.min(...products[i].variants.map(variant => variant.regularPrice || 0)) %>
+                                                        </span>
+                                                    <% } %>
                                                 </div>
-                                      
-                                            <div class="product-action-1 show">
-                                                <a aria-label="Add To Cart" class="action-btn hover-up"
-                                                    href="/cart/add">
-                                                    <i class="fi-rs-shopping-bag-add"></i>
-                                                </a>
+                                                <div class="product-action-1 show">
+                                                    <a aria-label="Add To Cart" class="action-btn hover-up" href="/cart/add?id=<%= products[i]._id %>">
+                                                        <i class="fi-rs-shopping-bag-add"></i>
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                                <% } %>
+                                    <% } %>
+                                    
 
                         </div>
 

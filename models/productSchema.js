@@ -23,10 +23,20 @@ const variantSchema = new Schema({
       return this.categoryType === "cardio";
     },
   },
-  price: {
+  regularPrice: {
     type: Number,
     required: true,
     min: 0,
+  },
+  salePrice: {
+    type: Number,
+    required: true,
+    validate: {
+      validator: function (value) {
+        return value <= this.regularPrice;
+      },
+      message: "Sale price cannot be greater than the regular price.",
+    },
   },
   stock: {
     type: Number,
@@ -61,21 +71,7 @@ const productSchema = new Schema(
       ref: "Category",
       required: true,
     },
-    regularPrice: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-    salePrice: {
-      type: Number,
-      required: true,
-      validate: {
-        validator: function (value) {
-          return value <= this.regularPrice;
-        },
-        message: "Sale price cannot be greater than the regular price.",
-      },
-    },
+
     productImages: {
       type: [String],
       required: true,
@@ -90,13 +86,13 @@ const productSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    offer:{
+    productOffer:{
     type:Number,
     default:0 , 
     },
-    offerAmount:{
-      type:Number,
-      default:0,
+    highestOffer:{
+    type:Number,
+    default:0
     },
     status: {
       type: String,
@@ -112,7 +108,29 @@ const productSchema = new Schema(
   { timestamps: true }
 );
 
+
+productSchema.pre('save', function (next) {
+  // Check if the product has variants
+  if (this.variants && this.variants.length > 0) {
+    this.variants = this.variants.map((variant) => {
+      // Update salePrice for each variant based on regularPrice and highestOffer
+      if (this.highestOffer && this.highestOffer > 0) {
+        variant.salePrice = variant.regularPrice - (variant.regularPrice * this.highestOffer) / 100;
+      } else {
+        variant.salePrice = variant.regularPrice; // No offer, salePrice equals regularPrice
+      }
+      return variant; // Return the updated variant
+    });
+  }
+  next(); // Proceed to the next middleware
+});
+
+
+
+
 productSchema.index({ category: 1, isBlocked: 1 });
 
 const Product = mongoose.model("Product", productSchema);
 module.exports = Product;
+
+

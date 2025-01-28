@@ -1,223 +1,225 @@
 <%- include("../../views/partials/user/header") %>
-    <main class="main">
-        <div class="page-header breadcrumb-wrap">
-            <div class="container">
-                <div class="breadcrumb">
-                    <a href="/" rel="nofollow">Home</a>
-                    <span></span> Shop
-                    <span></span> Your Cart
-                </div>
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/" rel="nofollow">Home</a>
+                <span></span> Shop
+                <span></span> Your Cart
             </div>
         </div>
-        <section class="mt-50 mb-50">
-            <div class="container">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="table-responsive">
-                            <table class="table shopping-summery text-center clean">
-                                <thead>
-                                    <tr class="main-heading">
-                                        <th scope="col">Image</th>
-                                        <th scope="col">Name</th>
-                                        <th scope="col">Variant</th>
-                                        <th scope="col">Price</th>
-                                        <th scope="col">Quantity</th>
-                                        <th scope="col">Subtotal</th>
-                                        <th scope="col">Remove</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% if (cart && cart.items.length> 0) { %>
-                                        <% cart.items.forEach((item)=> { %>
-                                            <tr>
-                                                <td class="image product-thumbnail">
-                                                    <img src="/assets/login/<%= item.productImage[0] %>"
-                                                        alt="<%= item.name %>">
-
-                                                </td>
-
-                                                <td class="product-des product-name">
-                                                    <h5>
-                                                        <%= item.name %>
-                                                    </h5>
-
-                                                </td>
-                                                <td class="variant">
-                                                    <span>
-                                                        <%= item.variant.type || item.variant.weight %>
-                                                    </span>
-                                                </td>
-
-                                                <td class="price" data-title="Price">
-                                                    <span>₹<%= item.variant.price.toFixed(2) %></span>
-                                                </td>
-                                                <td class="text-center" data-title="Stock">
+    </div>
+    <section class="mt-50 mb-50">
+        <div class="container">
+            <div class="row">
+                <div class="col-12">
+                    <% if (cart.items.some(item => item.outOfStock)) { %>
+                        <div class="alert alert-danger text-center">
+                            Some items in your cart are out of stock. Please remove them to proceed to checkout.
+                        </div>
+                    <% } %>
+                    <div class="table-responsive">
+                        <table class="table shopping-summery text-center clean">
+                            <thead>
+                                <tr class="main-heading">
+                                    <th scope="col">Image</th>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Variant</th>
+                                    <th scope="col">Price</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Subtotal</th>
+                                    <th scope="col">Remove</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (cart && cart.items.length > 0) { %>
+                                    <% cart.items.forEach((item) => { %>
+                                        <tr class="<%= item.outOfStock ? 'bg-light-danger' : '' %>">
+                                            <td class="image product-thumbnail">
+                                                <img src="/assets/login/<%= item.productImage[0] %>" alt="<%= item.name %>">
+                                            </td>
+                                            <td class="product-des product-name">
+                                                <h5><%= item.name %></h5>
+                                            </td>
+                                            <td class="variant">
+                                                <span>
+                                                    <%= item.variant ? (item.variant.type || item.variant.weight) : "Out of stock" %>
+                                                </span>
+                                            </td>
+                                            <td class="price" data-title="Price">
+                                                <% if (item.variant && item.variant.salePrice > 0) { %>
+                                                    ₹<%= Math.round(item.variant.salePrice) %>
+                                                <% } else { %>
+                                                    <span class="text-danger">Unavailable</span>
+                                                <% } %>
+                                            </td>
+                                            <td class="text-center" data-title="Stock">
+                                                <% if (!item.outOfStock) { %>
                                                     <div class="detail-qty border radius m-auto">
-                                                        <a href="#" class="qty-down"
+                                                        <a href="#" class="qty-down <%= item.quantity === 1 ? 'disabled' : '' %>"
                                                             onclick="updateQuantity('<%= item.productId %>', '<%= item.variant.variantId %>', -1)">
                                                             <i class="fi-rs-angle-small-down"></i>
                                                         </a>
                                                         <span class="qty-val" id="qty-<%= item.productId %>-<%= item.variant.variantId %>">
                                                             <%= item.quantity %>
                                                         </span>
-                                                        <a href="#" class="qty-up"
+                                                        <a href="#" class="qty-up <%= item.variant.stock <= item.quantity ? 'disabled' : '' %>"
                                                             onclick="updateQuantity('<%= item.productId %>', '<%= item.variant.variantId %>', +1)">
                                                             <i class="fi-rs-angle-small-up"></i>
                                                         </a>
                                                     </div>
-                                                </td>
-                                                
-                                                <td class="text-right" data-title="Cart">
-                                                    <span id="subtotal-<%= item.productId %>-<%= item.variant.variantId %>">
-                                                        ₹<%= (item.quantity * item.variant.price).toFixed(2) %>
-                                                    </span>
-                                                </td>
-                                          
-                                                <td class="action" data-title="Remove">
-                                                    <a href="#" class="text-muted"
-                                                        onclick="removeFromCart( '<%= item.productId %>', '<%= item.variant.variantId %>')">
-                                                        <i class="fi-rs-trash"></i>
-                                                    </a>
-
-                                                </td>
-
-                                            </tr>
-                                            
-                                                                                     
-                                            <% }) %>
-                                                <tr>
-                                            
-                                                </tr>
                                                 <% } else { %>
-                                                    <tr>
-                                                        <td colspan="6" class="text-center">
-                                                            <p>Your cart is empty.</p>
-                                                        </td>
-                                                    </tr>
+                                                    <span class="text-danger">Out of Stock</span>
+                                                <% } %>
+                                            </td>
+                                            <td class="text-right" data-title="Cart">
+                                                <span id="subtotal-<%= item.productId %>-<%= item.variant.variantId %>">
+                                                    <% if (!item.outOfStock) { %>
+                                                        ₹<%= Math.round(item.quantity * item.variant.salePrice) %>
+                                                    <% } else { %>
+                                                        N/A
                                                     <% } %>
-                                </tbody>
-                            </table>
-                        </div>
-                        <div class="cart-action text-end">
-                           
-                                <!-- Total: <span id="cart-total">₹<%= cart.total.toFixed(2) %></span> -->
-                            
-                            <!-- <a href="#" class="btn mr-10 mb-sm-15"><i class="fi-rs-shuffle mr-10"> Shopping</i></a> -->
-                             
-                            <a href="/" class="btn"><i class="fi-rs-shopping-bag mr-10"></i>Continue Shopping</a>
-                        </div>
-                        <div class="divider center_icon mt-50 mb-50"><i class="fi-rs-fingerprint"></i></div>
-                        <div class="row mb-50">
-                            <div class="col-lg-6 col-md-12">
-                                <div class="mb-30 mt-50">
-                                    <div class="heading_s1 mb-3">
-                                        <h4>Apply Coupon</h4>
-                                    </div>
-                                    <div class="total-amount">
-                                        <div class="left">
-                                            <div class="coupon">
-                                                <form action="#" target="_blank">
-                                                    <div class="form-row row justify-content-center">
-                                                        <div class="form-group col-lg-6">
-                                                            <input class="font-medium" name="Coupon"
-                                                                placeholder="Enter Your Coupon">
-                                                        </div>
-                                                        <div class="form-group col-lg-6">
-                                                            <button class="btn btn-sm"><i
-                                                                    class="fi-rs-label mr-10"></i>Apply</button>
-                                                        </div>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-6 col-md-12">
-                                <a href="/checkout" class="btn"><i class="fi-rs-box-alt mr-10"></i> Proceed To
-                                    Checkout</a>
-                            </div>
-                        </div>
+                                                </span>
+                                            </td>
+                                            <td class="action" data-title="Remove">
+                                                <a href="#" class="text-muted"
+                                                    onclick="removeFromCart('<%= item.productId %>', '<%= item.variant.variantId %>')">
+                                                    <i class="fi-rs-trash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="6" class="text-center">
+                                            <p>Your cart is empty.</p>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
                     </div>
+                    <% if (cart && cart.items.length > 0) { %>
+                        <div class="cart-action text-end">
+                            <button id="checkout-btn" class="btn" 
+                                <% if (cart.items.some(item => item.outOfStock)) { %> 
+                                    disabled 
+                                <% } %> 
+                                onclick="proceedToCheckout()">
+                                <i class="fi-rs-box-alt mr-10"></i> Proceed To Checkout
+                            </button>
+                        </div>
+    
+                        <div class="divider center_icon mt-50 mb-50"><i class="fi-rs-fingerprint"></i></div>
+                    <% } %>
                 </div>
             </div>
-        </section>
-    </main>
-    <%- include("../../views/partials/user/footer") %>
+        </div>
+    </section>
+</main>
+<%- include("../../views/partials/user/footer") %>
 
 
-    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
-        <script>
+<script>
+    // Function to remove an item from the cart
+    function removeFromCart(productId, variantId) {
+        swal({
+            title: "Are you sure?",
+            text: "Do you want to remove this item from the cart?",
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        }).then((willDelete) => {
+            if (willDelete) {
+                fetch('/cart/remove-item', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ productId, variantId }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.success) {
+                            swal("Success", data.message || "Item removed from cart successfully.", "success").then(() => {
+                                location.reload(); 
+                            });
+                        } else {
+                            swal("Error", data.message || "Failed to remove item from cart.", "error");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error removing item from cart:", error);
+                        swal("Error", "An error occurred. Please try again.", "error");
+                    });
+            }
+        });
+    }
 
-
-function removeFromCart(productId, variantId) {
-    swal({
-        title: "Are you sure?",
-        text: "Do you want to remove this item from the cart?",
-        icon: "warning",
-        buttons: true,
-        dangerMode: true,
-    }).then((willDelete) => {
-        if (willDelete) {
-            fetch('/cart/remove-item', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ productId, variantId }),
-            })
+    // Function to update the quantity of an item
+    function updateQuantity(productId, variantId, change) {
+        fetch('/update-quantity', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ productId, variantId, change }),
+        })
             .then((response) => response.json())
             .then((data) => {
                 if (data.success) {
-                    swal("Success", data.message || "Item removed from cart successfully.", "success").then(() => {
-                        location.reload(); // Reload the page after success
-                    });
+                    // Update quantity and subtotal on the frontend
+                    const qtySpan = document.querySelector(`#qty-${productId}-${variantId}`);
+                    const subtotalSpan = document.querySelector(`#subtotal-${productId}-${variantId}`);
+                    const checkoutButton = document.querySelector(".cart-action button");
+
+                    if (qtySpan) qtySpan.textContent = data.updatedItem.quantity;
+                    if (subtotalSpan) {
+                        const subtotal = Math.round(data.updatedItem.quantity * data.updatedItem.variantPrice);
+                        subtotalSpan.textContent = `₹${subtotal}`;
+                    }
+
+                    // Show a warning if stock is adjusted
+                    if (data.stockAdjusted) {
+                        swal("Stock Update", `Only ${data.updatedItem.availableStock} items are available for "${data.updatedItem.name}".`, "info");
+                    }
+
+                    // Disable checkout button if any item is out of stock
+                    if (data.cartHasOutOfStock) {
+                        checkoutButton.classList.add("disabled");
+                        checkoutButton.setAttribute("disabled", true);
+                    } else {
+                        checkoutButton.classList.remove("disabled");
+                        checkoutButton.removeAttribute("disabled");
+                    }
                 } else {
-                    swal("Error", data.message || "Failed to remove item from cart.", "error");
+                    // Show an error message
+                    swal("Error", data.message || "Failed to update quantity.", "error").then(()=>{
+                        location.reload();
+                    })
+                    
                 }
             })
             .catch((error) => {
-                console.error("Error removing item from cart:", error);
+                console.error("Error updating quantity:", error);
                 swal("Error", "An error occurred. Please try again.", "error");
             });
-        }
-    });
+    }
+
+
+    function proceedToCheckout() {
+    const hasOutOfStock = Array.from(document.querySelectorAll('.cart-item'))
+        .some((item) => item.dataset.outOfStock === "true");
+
+    if (hasOutOfStock) {
+        swal("Error", "Your cart contains out-of-stock items. Please remove them to proceed.", "error");
+        return;
+    }
+
+    // Redirect to the checkout page
+    window.location.href = "/checkout";
 }
 
-
-function updateQuantity(productId, variantId, change) {
-
-    
-    fetch("/update-quantity", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ productId, variantId, change }),
-    })
-    .then((response) => response.json())
-    .then((data) => {
-        if (data.success) {
-            // Backend approved the update; update the frontend UI
-            const qtySpan = document.querySelector(`#qty-${productId}-${variantId}`);
-            if (qtySpan) qtySpan.textContent = data.updatedItem.quantity;
-
-            const subtotalSpan = document.querySelector(`#subtotal-${productId}-${variantId}`);
-            if (subtotalSpan) {
-                subtotalSpan.textContent = `₹${(data.updatedItem.quantity * data.updatedItem.variantPrice).toFixed(2)}`;
-            }
-        } else {
-            // Backend rejected the update; show the error message
-            swal("Error", data.message || "Failed to update quantity.", "error");
-        }
-    })
-    .catch((error) => {
-        console.error("Error updating quantity:", error);
-        swal("Error", "An error occurred. Please try again.", "error");
-    });
-}
-
-
-
-        </script>
+</script>

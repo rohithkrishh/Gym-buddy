@@ -12,22 +12,24 @@ const CouponPage = async(req,res)=>{
 
 
 const addCopon = async(req,res)=>{
+    const { code, minPurchase, offerType, offerValue, UsageLimit, expiry, status } = req.body;
+
     try {
-        const {code,offerPrice,minPurchase,expiry,status,UsageLimit} = req.body;
-         
-        const copon = new Coupon({
-            name:code,
-            offerPrice:offerPrice,
-            minimumPrice: minPurchase || 0,
-            expireOn:expiry,
-            UsageLimit,
-            isList:status ==="active"
-        })
-        await copon.save();
-        res.redirect("/admin/coupon");
-        console.log("copen created successfully");
+        const newCoupon = new Coupon({
+            name: code,
+            offerType,
+            offerValue,
+            minimumPrice: minPurchase,
+            usageLimit: UsageLimit,
+            expireOn: expiry,
+            isList: status === 'active',
+        });
+
+        await newCoupon.save();
+        res.redirect('/admin/coupon'); // Redirect to the coupon management page
     } catch (error) {
-        console.error("Error in adding copon",error);
+        console.error('Error adding coupon:', error);
+        res.status(500).send('Internal Server Error');
     }
 }
 
@@ -49,30 +51,10 @@ const deleteCoupon = async(req,res)=>{
 }
 
 
-const editCoupon = async(req,res)=>{
-    try {
-        const {couponId,amount,expiryDate,minPurchase} = req.body
-        console.log(" cop body :",req.body);
-        
-        const coupon = await Coupon.findById(couponId)
-
-        coupon.offerPrice = amount
-        coupon.expireOn = expiryDate
-        coupon.minimumPrice = minPurchase
-        coupon.save()
-
-        res.status(200).send("Coupon Updated Succesfully")
-        console.log("Coupon Updated Successfully")
-    } catch (error) {
-        console.error("Error in Editing Coupon",error);
-        res.status(500).send("An error occured in updating Coupon..!")
-    }
-}
-
 
 module.exports ={
     CouponPage,
     addCopon,
     deleteCoupon,
-    editCoupon
+  
 }

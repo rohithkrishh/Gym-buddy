@@ -133,8 +133,7 @@
                 <th scope="col">Quantity</th>
                 <th scope="col">Variants</th>
                 <th scope="col">Actions</th>
-                <th scope="col">Offer</th>
-                <th scope="col">Edit</th>
+                
             </tr>
         </thead>
         <tbody>
@@ -148,26 +147,47 @@
                         <td><%= data[i].productName %></td>
                         <td><%= data[i].brand %></td>
                         <td><%= data[i].category?.name || "Unknown Category" %></td>
-                        <td><%= data[i].salePrice %></td>
-                        <td>
-                            <% if (data[i].offer) { %>
-                                <%= data[i].offer  %>%
-                            <% } else { %>
-                                0%
-                            <% } %>
-                        </td>
-                        <td><%= data[i].quantity %></td>
+                
+                        <!-- Sale Price or Regular Price (Variant Level) -->
                         <td>
                             <% if (data[i].variants && data[i].variants.length > 0) { %>
                                 <ul class="list-unstyled">
                                     <% data[i].variants.forEach(variant => { %>
+                                        <li>
+                                            Sale Price: ₹<%= variant.salePrice || 0 %>, 
+                                            Regular Price: ₹<%= variant.regularPrice || 0 %>
+                                        </li>
+                                    <% }); %>
+                                </ul>
+                            <% } else { %>
+                                No Variants
+                            <% } %>
+                        </td>
+                
+                        <!-- Offer -->
+                        <td>
+                            <% if (data[i].highestOffer) { %>
+                                <%= data[i].highestOffer %>%
+                            <% } else { %>
+                                0%
+                            <% } %>
+                        </td>
+                
+                        <!-- Quantity -->
+                        <!-- <td><%= data[i].quantity %></td> -->
+                
+                        <!-- Variants Details -->
+                        <td>
+                           
+                            <% if (data[i].variants && data[i].variants.length > 0) { %>
+                                <ul class="list-unstyled">
+                                    <% data[i].variants.forEach(variant => { %>
                                         <li class="mb-1">
-                                            <% if (variant.categoryType === "strength") { %>
+                                            <!-- <% if (variant.categoryType === "strength") { %> -->
                                                 Weight: <%= variant.weight %> kg, 
-                                            <% } else if (variant.categoryType === "cardio") { %>
+                                            <!-- <% } else if (variant.categoryType === "cardio") { %> -->
                                                 Type: <%= variant.type %>, 
-                                            <% } %>
-                                            Price: <%= variant.price %>, 
+                                            <!-- <% } %> -->
                                             Stock: <%= variant.stock %>, 
                                             SKU: <%= variant.sku %>
                                         </li>
@@ -177,6 +197,8 @@
                                 No Variants
                             <% } %>
                         </td>
+                
+                        <!-- Block/Unblock Button -->
                         <td>
                             <% if (!data[i].isBlocked) { %>
                                 <button class="btn btn-danger" onclick="confirmAction('/admin/blockProduct?id=<%= data[i]._id %>', 'block this product')">
@@ -188,10 +210,12 @@
                                 </button>
                             <% } %>
                         </td>
+                
+                        <!-- Add/Update/Remove Offer and Edit -->
                         <td>
                             <div class="btn-group">
-                                <% if (data[i].offer && data[i].offer > 0) { %>
-                                    <button class="btn btn-warning" onclick="addOffer('<%= data[i]._id %>', <%= data[i].offer %>)">
+                                <% if (data[i].productOffer && data[i].productOffer > 0) { %>
+                                    <button class="btn btn-warning" onclick="addOffer('<%= data[i]._id %>', <%= data[i].productOffer %>)">
                                         Update 
                                     </button>
                                     <button class="btn btn-danger" onclick="removeOffer('<%= data[i]._id %>')">
@@ -207,7 +231,8 @@
                         </td>
                     </tr>
                 <% } %>
-            <% } %>
+               
+                <%}%>
         </tbody>
     </table>
 </div>

@@ -1,240 +1,1258 @@
+<%- include("../../views/partials/user/header") %>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Swiper CSS -->
+<link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css">
 
 
-const filterProduct = async (req, res) => {
-    try {
-        const user = req.session.user;
-        const category = req.query.category; // Category ID from query params
-        const minPrice = parseInt(req.query.minPrice) || 0; // Minimum price, default to 0
-        const maxPrice = parseInt(req.query.maxPrice) || Infinity; // Maximum price, default to Infinity
+    <style>
+    .copy-btn {
+    background-color:transparent; /* Green */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
 
-        // Fetch the selected category
-        const findCategory = category ? await Category.findOne({ _id: category }) : null;
+.copy-btn:hover {
+    background-color: #45a049; /* Darker green */
+}
 
-        // Build the query object for filtering
-        const query = {
-            isBlocked: false,
-            regularPrice: { $gte: minPrice, $lte: maxPrice }, // Price range filter
-        };
-
-        if (findCategory) {
-            query.category = findCategory._id; // Filter by category
+.error-message {
+            color: red;
         }
 
-        // Fetch the filtered products
-        let findProducts = await Product.find(query).lean();
+    </style>
 
-        // Pagination
-        const itemsPerPage = 6;
-        const currentPage = parseInt(req.query.page) || 1;
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const totalProducts = findProducts.length;
-        const totalPages = Math.ceil(totalProducts / itemsPerPage);
-
-        // Sort products by creation date
-        findProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-        // Get products for the current page
-        const currentProduct = findProducts.slice(startIndex, startIndex + itemsPerPage);
-
-        // Fetch categories for sidebar filtering
-        const categories = await Category.find({ isListed: true });
-
-        // Pass the filtered products and data to the view
-        res.render("shops", {
-            user,
-            products: currentProduct,
-            categories,
-            totalPages,
-            currentPage,
-            selectedCategory: category || null,
-            selectedMinPrice: req.query.minPrice || 0,
-            selectedMaxPrice: req.query.maxPrice || Infinity,
-        });
-    } catch (error) {
-        console.error(error);
-        res.redirect("/pageNotFound");
-    }
-};
-
-
-<table class="table table-bordered text-center align-middle">
-    <thead>
-        <tr>
-            <th colspan="2">Product</th>
-            <th>Price</th>
-            <th>Stock Status</th>
-            <th>Action</th>
-            <th>Remove</th>
-        </tr>
-    </thead>
-    <tbody>
-        <% if (wishlist.products && wishlist.products.length> 0) { %>
-            <% let i=0; %> <!-- Initialize i outside the loop -->
-                <% wishlist.products.forEach(product=> { %>
-                    <tr>
-                        <td class="image product-thumbnail" data-title="Image">
-                            <img src="/assets/login/<%= product.productId.productImages[0] %>"
-                                alt="<%= product.productId.productName %>"
-                                class="img-fluid rounded" style="max-width: 80px;">
-                        </td>
-                        <td class="product-des product-name" data-title="Product">
-                            <h6 class="mb-0"><a href="/productDetails?id=<%= product.productId._id %>">
-                                    <%= product.productId.productName %>
-                                </a></h6>
-                        </td>
-                        <td class="price" data-title="Price">
-                            <span>₹ <%= product.productId.salePrice %></span>
-                        </td>
-                        <td class="stock-status" data-title="Stock">
-                            <% if (product.productId.quantity> 0) { %>
-                                <span class="badge bg-success">In Stock</span>
-                                <% } else { %>
-                                    <span class="badge bg-danger">Out of Stock</span>
-                                    <% } %>
-                        </td>
-                        <td data-title="Action">
-                            <button class="btn btn-sm btn-primary cart-button"
-                                data-product-id="<%= product.productId._id %>"
-                                data-bs-toggle="modal" data-bs-target="#sizeModal-<%= i %>">
-                                <i class="fi-rs-shopping-bag"></i> Add to cart
-                            </button>
-                        </td>
-                        <td data-title="Remove">
-                            <button class="btn btn-sm btn-outline-danger"
-                                onclick="removeFromWishlist('<%= product.id %>')">Remove</button>
-                        </td>
-                    </tr>
-
-                    <!-- Size Modal for Each Product -->
-                    <div id="sizeModal-<%= i %>" class="modal fade" tabindex="-1">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h4 class="modal-title">Select Size</h4>
-                                    <button type="button" class="btn-close"
-                                        data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div class="size-wrap">
-                                        <div class="block-26 mb-2">
-                                            <h5>Available Sizes</h5>
-                                            <ul
-                                                class="size-options list-unstyled d-flex flex-wrap">
-                                                <% product.productId.variants.forEach(({ size
-                                                    })=> { %>
-                                                    <li class="variant-option px-2 py-1 border rounded me-2 mb-2"
-                                                        data-size="<%= size %>">
-                                                        <%= size %>
-                                                    </li>
-                                                    <% }); %>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button id="modalOkButton-<%= i %>"
-                                        class="btn btn-primary modal-ok"
-                                        data-product-id="<%= product.productId._id %>">OK</button>
-                                    <button type="button" class="btn-cancle btn-secondary"
-                                        data-bs-dismiss="modal">Cancel</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <% i++; %> <!-- Increment i after each iteration -->
-                        <% }); %>
-                            <% } else { %>
-                                <tr>
-                                    <td colspan="6" class="text-center">
-                                        <div class="py-5">
-                                            <h5>Your wishlist is empty.</h5>
-                                            <a href="/" class="btn btn-primary mt-3">Start
-                                                Shopping</a>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <% } %>
-    </tbody>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- <section class="popular-categories section-padding mt-15 mb-25">
-    <div class="container wow fadeIn animated">
-        <h3 class="section-title mb-20"><span>Popular</span> Categories</h3>
-        <div class="carausel-6-columns-cover position-relative">
-            <div class="slider-arrow slider-arrow-2 carausel-6-columns-arrow"
-                id="carausel-6-columns-arrows"></div>
-            <div class="carausel-6-columns" id="carausel-6-columns">
-                <div class="card-1">
-                    <figure class=" img-hover-scale overflow-hidden">
-                        <a href="shop-grid-right.html"><img
-                                src="assets/imgs/shop/category-thumb-1.jpg" alt=""></a>
-                    </figure>
-                    <h5><a href="shop-grid-right.html">T-Shirt</a></h5>
-                </div>
-                <div class="card-1">
-                    <figure class=" img-hover-scale overflow-hidden">
-                        <a href="shop-grid-right.html"> <img
-                                src="assets/imgs/shop/category-thumb-2.jpg" alt=""></a>
-                    </figure>
-                    <h5><a href="shop-grid-right.html">Bags</a></h5>
-                </div>
-                <div class="card-1">
-                    <figure class=" img-hover-scale overflow-hidden">
-                        <a href="shop-grid-right.html"><img
-                                src="assets/imgs/shop/category-thumb-3.jpg" alt=""></a>
-                    </figure>
-                    <h5><a href="shop-grid-right.html">Sandan</a></h5>
-                </div>
-                <div class="card-1">
-                    <figure class=" img-hover-scale overflow-hidden">
-                        <a href="shop-grid-right.html"><img
-                                src="assets/imgs/shop/category-thumb-4.jpg" alt=""></a>
-                    </figure>
-                    <h5><a href="shop-grid-right.html">Scarf Cap</a></h5>
-                </div>
-                <div class="card-1">
-                    <figure class=" img-hover-scale overflow-hidden">
-                        <a href="shop-grid-right.html"><img
-                                src="assets/imgs/shop/category-thumb-5.jpg" alt=""></a>
-                    </figure>
-                    <h5><a href="shop-grid-right.html">Shoes</a></h5>
-                </div>
-                <div class="card-1">
-                    <figure class=" img-hover-scale overflow-hidden">
-                        <a href="shop-grid-right.html"><img
-                                src="assets/imgs/shop/category-thumb-6.jpg" alt=""></a>
-                    </figure>
-                    <h5><a href="shop-grid-right.html">Pillowcase</a></h5>
-                </div>
-                <div class="card-1">
-                    <figure class=" img-hover-scale overflow-hidden">
-                        <a href="shop-grid-right.html"><img
-                                src="assets/imgs/shop/category-thumb-7.jpg" alt=""></a>
-                    </figure>
-                    <h5><a href="shop-grid-right.html">Jumpsuits</a></h5>
-                </div>
-                <div class="card-1">
-                    <figure class=" img-hover-scale overflow-hidden">
-                        <a href="shop-grid-right.html"><img
-                                src="assets/imgs/shop/category-thumb-8.jpg" alt=""></a>
-                    </figure>
-                    <h5><a href="shop-grid-right.html">Hats</a></h5>
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="/" rel="nofollow">Home</a>
+                    <span></span> Shop
+                    <span></span> Checkout
                 </div>
             </div>
         </div>
-    </div>
-</section>
+        <br>
+
+        <section class="mt-50 mb-50">
+            
+         <!-- coupon portion -->
+         <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="toggle_info">
+                        <span><i class="fi-rs-label mr-10"></i><span class="text-muted">Available coupons.</span> <a href="#coupon" data-bs-toggle="collapse" class="collapsed" aria-expanded="false">Click here to choose your code</a></span>
+                    </div>
+                    <div class="panel-collapse collapse coupon_form " id="coupon">
+                        
+                            <div class="col-12">
+                                <div class=" mt-50 mb-50"></div>
+                            </div>
+                        
+                        <section class="banners mb-15" id="">
+                            <div class="container">
+                                <div class="row">
+                                    <% 
+                                        // Predefined list of images
+                                        const imagess = [
+                                            "assets/imgs/banner/coupon-4.webp",
+                                            "assets/imgs/banner/coupon-2.webp",
+                                            "assets/imgs/banner/coupon-3.webp",
+                                            "assets/imgs/banner/frame-3.png"
+                                        ];
+                                    %>
+                        
+                                    <% for (let i = 0; i < coupon.length; i++) { %>
+                                        <div class="col-lg-4 col-md-6"> 
+                                            <div class="banner-img wow fadeIn animated">
+                                                <!-- Dynamically assign images using modulus operator -->
+                                                <img src="<%= imagess[i % imagess.length] %>" alt="Coupon Image">
+                                                <div class="banner-text">
+                                                    <span>Exclusive Coupon</span>
+                                                    <h4>
+                                                        <span style="color: rgb(136, 206, 244);">Save </span>
+                                                        <span style="color: rgb(70, 213, 14);"><%= coupon[i].offerPrice %></span> 
+                                                        <span style="color: aliceblue;">on every minimum Purchase at</span> 
+                                                        <span style="color: rgb(240, 41, 6);"><%= coupon[i].minimumPrice %></span>
+                                                    </h4>
+                                                    <span>COUPON CODE:</span>
+                                                    <strong style="color: white;" id="couponCode-<%= i %>"><%= coupon[i].name %></strong>
+                                                    <button 
+                                                        class="copy-btn" 
+                                                        onclick="copyCouponCode('<%= coupon[i].name %>')">
+                                                        Copy
+                                                    </button>
+                                                    <br>
+                                                    <span>Expires On:</span>
+                                                    <strong style="color: white;"><%= new Date(coupon[i].expireOn).toLocaleDateString() %></strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% } %> 
+                                </div>
+                            </div>
+                        </section>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>   
+            
+            <form method="POST" id="orderForm" action="/placeOrder" onsubmit="return placeOrder(event)">
+                <div class="container">
+
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="divider mt-50 mb-50"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Billing Details -->
+                        <div class="col-md-6">
+                            <div class="mb-25">
+                                <h4>Billing Details</h4>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" name="fname" id="fname" placeholder="First Name *">
+                                <div id="fname-error" class="error-message"></div>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" name="lname" id="lname" placeholder="Last Name *">
+                                <div id="lname-error" class="error-message"></div>
+                            </div>
+
+                            <!-- address details -->
+                            <div class="form-group col-md-12">
+                                <a href="/addAddress?redirectTo=checkout" class="btn btn-link"
+                                    style="text-decoration: none;">
+                                    Add Address
+                                </a>
+
+                            </div>
+
+                            
+                            <% if (addresses && addresses.length> 0) { %>
+                                <h5>Select Shipping Address:</h5>
+                                <% addresses.forEach((addr, index)=> { %>
+                                    <div class="address-option">
+                                        <input style="height: 20px;" type="radio" name="selectedAddress" id="address-<%= index %>"
+                                            value="<%= addr._id %>" <%=index===0 ? 'checked' : '' %>>
+                                        <label for="address-<%= index %>">
+                                            <p><strong>Address Type:</strong>
+                                                <%= addr.addressType %>
+                                            </p>
+                                            <p><strong>Name:</strong>
+                                                <%= addr.name %>
+                                            </p>
+                                            <p><strong>City:</strong>
+                                                <%= addr.city %>
+                                            </p>
+                                            <p><strong>Landmark:</strong>
+                                                <%= addr.landMark %>
+                                            </p>
+                                            <p><strong>State:</strong>
+                                                <%= addr.state %>
+                                            </p>
+                                            <p><strong>Postal Code:</strong>
+                                                <%= addr.pincode %>
+                                            </p>
+                                            <p><strong>Phone:</strong>
+                                                <%= addr.phone %>
+                                            </p>
+                                            <p><strong>Alt Phone:</strong>
+                                                <%= addr.altPhone %>
+                                            </p>
+                                        </label>
+                                        <hr>
+                                    </div>
+                                    <% }); %>
+                                        <% } else { %>
+                                            <p>No addresses found. Please update your profile with a shipping address.
+                                            </p>
+                                            <% } %>
+                        </div>
+
+                        <!-- Order Summary -->
+                        <div class="col-md-6">
+                            <div class="mb-20">
+                                <h4>Your Orders</h4>
+                            </div>
+                            <div class="table-responsive order_table">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th colspan="2">Product</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% if (cart.length> 0) { %>
+                                            <% cart.forEach(item=> { %>
+                                                <tr>
+                                                    <td class="image product-thumbnail">
+                                                        <img src="/uploads/re-image/<%= item.productId.productImage[0] %>"
+                                                            alt="#">
+                                                    </td>
+                                                    <td>
+                                                        <h5>
+                                                            <%= item.productId.productName %>
+                                                        </h5>
+                                                        <span class="product-qty">Qty: <%= item.quantity %></span>
+                                                    </td>
+                                                    <td>
+                                                        <%= Math.floor(item.totalPrice) %>
+                                                    </td>
+                                                </tr>
+                                                <% }); %>
+                                                    <% } else { %>
+                                                        <tr>
+                                                            <td colspan="3">Oops... No items found in your cart!</td>
+                                                        </tr>
+                                                        <% } %>
+                                                            <tr>
+                                                                <th>Subtotal</th>
+                                                                <td colspan="2">
+                                                                    <%= Math.floor(subTotal.toFixed(2)) %>
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Shipping</th>
+                                                                <td colspan="2" id="shippingCharge">0.00</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Discount</th>
+                                                                <td colspan="2" id="couponDiscount">0.00</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <th>Total</th>
+                                                                <td colspan="2" id="totalAmount"
+                                                                    class="font-xl text-brand fw-900">
+                                                                    <%= Math.floor(total.toFixed(2)) %>
+                                                                </td>
+                                                            </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- coupon apply -->
+                            <div class="mb-30 mt-50">
+                                <div class="heading_s1 mb-3">
+                                    <h4>Apply Coupon</h4>
+                                </div>
+                                <div class="total-amount">
+                                    <div class="left">
+                                        <div class="coupon">
+                                            <!-- <form action="#" target="_blank"> -->
+                                            <div class="form-row row justify-content-center">
+                                                <div class="form-group col-lg-6">
+                                                    <input class="font-medium" name="couponCode" id="couponCode"
+                                                        placeholder="Enter Your Coupon Code Here..">
+                                                </div>
+                                                <div class="form-group col-lg-6">
+                                                    <button class="btn  btn-sm" id="couponButton"><i class="fi-rs-label mr-10"></i>
+                                                        Apply
+                                                    </button>
+                                                    <button class="btn btn-sm" id="RemoveCoupon" style="display: none;">
+                                                        Remove Coupon
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <!-- </form> -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Delivery Options -->
+                            <h5>Delivery Options</h5>
+                            <div class="delivery_option">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="deliveryMethod"
+                                        id="regularDelivery" value="regular" checked>
+                                    <label class="form-check-label" for="regularDelivery">Regular Delivery (Free
+                                        Shipping)</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="deliveryMethod" id="fastDelivery"
+                                        value="fast">
+                                    <label class="form-check-label" for="fastDelivery">Fast Delivery (+80.00)</label>
+                                </div>
+                            </div>
+
+                            <br>
+
+                            <!-- Payment Methods -->
+                            <h5>Payment</h5>
+                            <div class="payment_option">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="wallet"
+                                        value="wallet">
+                                    <label class="form-check-label" for="wallet">Wallet</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="cod"
+                                        value="COD" checked>
+                                    <label class="form-check-label" for="cod">Cash on Delivery</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="paymentMethod" id="razorPay"
+                                        value="Online">
+                                    <label class="form-check-label" for="razorPay">Razor Pay</label>
+                                </div>
+                            </div>
+                            <br>
+
+                            <button type="submit" id="placeOrderButton" class="btn btn-fill-out btn-block mt-30">Place
+                                Order</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+           
+            
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <!-- Swiper JS -->
+   <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script> 
+
+    <%- include("../../views/partials/user/footer") %>
+
+
+    <script>
+        
+        let discount = 0; // Tracks the applied discount
+        let deliveryCharge = 0; // Tracks the selected delivery charge
+        const subTotal = parseFloat(<%= subTotal.toFixed(2) %>); // Initial subtotal 
+        let currentTotal = subTotal; // Tracks the dynamically updated total
+    
+        // coupon function
+        document.getElementById("couponButton").addEventListener("click", async (event) => {
+            event.preventDefault();
+    
+            const couponCode = document.getElementById("couponCode").value.trim();
+    
+            if (!couponCode) {
+                Swal.fire({
+                    title: "Error",
+                    text: "Please Enter A valid Coupon Code.",
+                    icon: "error"
+                });
+                return;
+            }
+    
+            try {
+                const response = await fetch("/verifyCoupon", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ couponCode, subTotal })
+                });
+    
+                const data = await response.json();
+    
+                if (data.success) {
+                    discount = data.discount; 
+                    document.getElementById("couponDiscount").textContent = `${discount.toFixed(2)}`
+                    currentTotal = subTotal - discount + deliveryCharge; // Update current total
+                    updateTotalDisplay();
+    
+                    Swal.fire({
+                        title: "Success.",
+                        text: "Coupon added Successfully",
+                        icon: "success"
+                    });
+
+                    document.getElementById("RemoveCoupon").style.display = "inline-Block"
+                } else {
+                    Swal.fire({
+                        title: "Error..!",
+                        text: data.message,
+                        icon: "error"
+                    });
+                }
+            } catch (error) {
+                console.error("Error in adding coupon code", error);
+                Swal.fire({
+                    title: "Error.!",
+                    text: "An error occurred while adding the coupon. Please try again later.",
+                    icon: "error"
+                });
+            }
+        });
+
+        // Remove Coupon function
+
+        document.getElementById("RemoveCoupon").addEventListener("click",async(event)=>{
+            event.preventDefault()
+
+            discount =0
+            document.getElementById("couponDiscount").textContent ="0.00"
+            currentTotal = subTotal + deliveryCharge
+            updateTotalDisplay()
+            console.log("sub value ",subTotal);
+            console.log("del charge ",deliveryCharge)
+
+            document.getElementById("RemoveCoupon").style.display = "none"
+            document.getElementById("couponCode").value = " "
+
+
+            Swal.fire({
+                title:"Success",
+                text:"Coupon Removed Successfully",
+                icon:"success"
+            })
+        })
+    
+        // Place order function
+        async function placeOrder(event) {
+            if (event) {
+                event.preventDefault();
+            }
+
+            // validate form
+            if (!formValidate()) {
+                return false; // Stop the process if validation fails
+            }
+    
+            try {
+                //const selectedAddress = document.querySelector("input[name='selectedAddress']:checked").value;
+                const paymentMethod = document.querySelector("input[name='paymentMethod']:checked").value;
+                const deliveryMethod = document.querySelector("input[name='deliveryMethod']:checked").value;
+                const couponCode = discount > 0 ? document.getElementById("couponCode").value.trim() : "";
+
+                const selectedAddressElement = document.querySelector("input[name='selectedAddress']:checked");
+                if (!selectedAddressElement) {
+                    Swal.fire("Error", "Please add a shipping address", "info");
+                    return false;
+                }
+
+                const selectedAddress = selectedAddressElement.value;
+                const paymentMethodElement = document.querySelector("input[name='paymentMethod']:checked");
+                if (!paymentMethodElement) {
+                    Swal.fire("Error", "Please select a payment method", "error");
+                    return false;
+                }
+    
+
+                // placing order using RazorPay
+                if(paymentMethod === "Online"){
+                    
+                    const response = await fetch("/placeOrderRazorPay",{
+                        method:"POST",
+                        headers:{
+                            "Content-Type":"application/json"
+                        },
+                        body:JSON.stringify({totalAmount:currentTotal})
+                    })
+
+                    const data = await response.json();
+                    console.log("data:",data)
+
+                    if(data.success){
+                       const {orderId,amount,currency,key} = data;
+
+                       const options ={
+                        key,
+                        amount,
+                        currency,
+                        name:"Frame Fury",
+                        description:"Order Payment",
+                        order_id:orderId,
+                        handler: async function(response){
+                            console.log("rz response ",response)
+
+                            const paymentId = response.razorpay_payment_id
+                            const razorpaySignature = response.razorpay_signature
+                            const orderId = response.razorpay_order_id
+                            
+                            // send to the backend to verify the order
+                            const verifyResponse = await fetch("/verifyRazorPayOrder",{
+                                method:"POST",
+                                headers:{
+                                    "Content-Type":"application/json"
+                                },
+                                body:JSON.stringify({
+                                    selectedAddress, paymentMethod, deliveryMethod, couponCode,
+                                    orderId,
+                                    paymentId,
+                                    razorpaySignature
+                                })
+                            })
+
+                            const verifyData = await verifyResponse.json()
+                            console.log("verify:",verifyData)
+                            if(verifyData.success){
+                             
+                                 window.location.href =`/orderSuccess?orderId=${data.orderId}`;
+                            }
+                            else{
+                                Swal.fire({
+                                icon: "error",
+                                title: "Payment Failed",
+                                text: "Payment verification failed. Please try again.",
+                                confirmButtonText: "OK",
+                            });
+                            }
+                        },
+                        modal: {
+                            ondismiss: async function () {
+                                console.log("Payment  Failed");
+
+                                // Log the failed order to the backend
+                                const cancelResponse = await fetch("/verifyRazorPayOrder", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({
+                                        selectedAddress,
+                                        paymentMethod,
+                                        deliveryMethod,
+                                        couponCode,
+                                        orderId,
+                                        paymentId: null,
+                                        razorpaySignature: null,
+                                        paymentStatus: "Failed" // Mark as failed
+                                    })
+                                });
+
+                                const cancelData = await cancelResponse.json();
+                                console.log("Cancel Response:", cancelData);
+
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Payment Failed",
+                                    text: "Your payment was unsuccessful. Order has been placed with status 'Payment Failed'.",
+                                    confirmButtonText: "OK"
+                                }).then(() => window.location.href = `/oderFailure?orderId=${cancelData.orderId}`);
+                            }
+                        },                     
+                        theme:{color:"#3399cc"},
+                       }
+
+                       const rzp =new Razorpay(options);
+                       rzp.open()
+                    }
+                    else{
+                        Swal.fire({
+                        icon: "error",
+                        title: "Error",
+                        text: data.message,
+                        confirmButtonText: "OK",
+                        });
+                    }
+                }
+                // placing order using COD
+                else if(paymentMethod === "COD"){
+
+                console.log("sel",selectedAddress)
+                console.log("sel",paymentMethod)
+                console.log("sel",deliveryMethod)
+                console.log("sel",couponCode)
+                console.log("sel",currentTotal)
+
+
+                const response = await fetch("/placeOrder", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ selectedAddress, paymentMethod, deliveryMethod, couponCode, totalAmount: currentTotal }),
+                });
+    
+                const data = await response.json();
+                console.log("data:cod",data)
+    
+                if (data.success) {
+                        window.location.href = `/orderSuccess?orderId=${data.orderId}`; 
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Order Placing Failed",
+                        text: data.message,
+                        confirmButtonText: "OK",
+                    });
+                }
+            }
+
+            // order placing using Wallet
+            else if(paymentMethod === "wallet"){
+
+                const response = await fetch("/placeOrderWallet",{
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body:JSON.stringify({
+                        selectedAddress,
+                        paymentMethod,
+                        deliveryMethod,
+                        couponCode,
+                        totalAmount:currentTotal
+                    })
+                })
+
+                console.log("sel",selectedAddress)
+                console.log("sel",paymentMethod)
+                console.log("sel",deliveryMethod)
+                console.log("sel",couponCode)
+                console.log("sel",currentTotal)
+
+                const data = await response.json()
+                if(data.success){
+                     window.location.href=`/orderSuccess?orderId=${data.orderId}`;
+                }else{
+                    Swal.fire({
+                        title:"Error.",
+                        text:data.message,
+                        icon:"error",
+                        confirmButtonText:"OK"
+                    })
+                }
+            }
+
+            } catch (error) {
+                console.error("Error Placing Order", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Error",
+                    text: "An error occurred while placing the order. Please try again later.",
+                    confirmButtonText: "OK",
+                });
+            }
+        }
+    
+        // Update total at delivery method changes
+        document.addEventListener("DOMContentLoaded", function () {
+            const deliveryOptions = document.querySelectorAll("input[name='deliveryMethod']");
+            const shippingChargeElement = document.getElementById("shippingCharge");
+    
+            deliveryOptions.forEach(option => {
+                option.addEventListener("change", function () {
+                    if (this.value === "fast") {
+                        deliveryCharge = 80.00;
+                    } else {
+                        deliveryCharge = 0.00;
+                    }
+    
+                    shippingChargeElement.textContent = deliveryCharge.toFixed(2);
+                    currentTotal = Math.floor(subTotal - discount + deliveryCharge); // Recalculate total
+                    updateTotalDisplay();
+                });
+            });
+        });
+    
+        // Function to update total display
+        function updateTotalDisplay() {
+            const totalAmountElement = document.getElementById("totalAmount");
+            totalAmountElement.textContent = currentTotal.toFixed(2);
+            console.log("Updated Total:", currentTotal);
+        }
+    </script>
+
+
+ <!-- coupon code copy function -->
+<script>
+    function copyCouponCode(code) {
+        // Create a temporary input element to copy text
+        const tempInput = document.createElement('input');
+        tempInput.value = code;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        tempInput.setSelectionRange(0, 99999); // For mobile devices
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        
+        Swal.fire({
+            title:"Coupon code copied",
+            text:"Code : "+code,
+            icon:"success",
+            showConfirmButton:false,
+            timer:1000
+        })
+    }
+</script>
+
+
+<script>
+
+function formValidate() {
+    clearErrorMessage();
+    const firstName = document.getElementById("fname").value;
+    const lastName = document.getElementById("lname").value;
+
+    const namePattern = /^[A-Za-z\s]+$/;
+    let isValid = true;
+
+    if (firstName === "") {
+        ErrorMessage("fname-error", "First name is required.");
+        isValid = false;
+    } else if (!namePattern.test(firstName)) {
+        ErrorMessage("fname-error", "First name can only contain alphabetic letters.");
+        isValid = false;
+    }
+
+    if (lastName === "") {
+        ErrorMessage("lname-error", "Last name is required.");
+        isValid = false;
+    } else if (!namePattern.test(lastName)) {
+        ErrorMessage("lname-error", "Last name can only contain alphabetic letters.");
+        isValid = false;
+    }
+
+    return isValid;
+}
+
+
+    function ErrorMessage(nameId,message){
+        let errorElement = document.getElementById(nameId)
+        errorElement.innerText = message;
+        errorElement.style.display = "block"
+    }
+
+    function clearErrorMessage(){
+        const errorElements = document.getElementsByClassName("error-message")
+        Array.from(errorElements).forEach((element)=>{
+            element.innerText ="";
+            element.style.display = "block"
+        })
+    }
+
+</script>
+
+<script>
+    document.getElementById('saveAddressBtn').addEventListener('click', async function () {
+        let isValid = true;
+
+        // Clear any existing error messages
+        document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+
+        // Get form values
+        const addressType = document.getElementById('addressType').value;
+        const name = document.getElementById('name').value;
+        const city = document.getElementById('city').value;
+        const landMark = document.getElementById('landMark').value;
+        const state = document.getElementById('state').value;
+        const pincode = document.getElementById('pincode').value;
+        const phone = document.getElementById('phone').value;
+        const altPhone = document.getElementById('altPhone').value;
+
+        // Validate form fields
+        if (!addressType) {
+            isValid = false;
+            document.getElementById('addressTypeError').textContent = 'Select address type.';
+        }
+        if (!name.trim()) {
+            isValid = false;
+            document.getElementById('nameError').textContent = 'Enter your name.';
+        }
+        if (!city.trim()) {
+            isValid = false;
+            document.getElementById('cityError').textContent = 'Enter your city.';
+        }
+        if (!state.trim()) {
+            isValid = false;
+            document.getElementById('stateError').textContent = 'Enter your state.';
+        }
+        if (!pincode.match(/^\d{6}$/)) {
+            isValid = false;
+            document.getElementById('pincodeError').textContent = 'Pincode must be 6 digits.';
+        }
+        if (!phone.match(/^\d{10}$/)) {
+            isValid = false;
+            document.getElementById('phoneError').textContent = 'Phone must be 10 digits.';
+        }
+
+        // If form is valid, send the data
+        if (isValid) {
+            const data = {
+                addressType,
+                name,
+                city,
+                landMark,
+                state,
+                pincode,
+                phone,
+                altPhone
+            };
+
+            const redirectTo = 'userProfile'; // Or 'checkout', depending on where you want to redirect after success
+            try {
+                const response = await fetch('/addAddress?redirectTo=' + redirectTo, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    // Success - Show SweetAlert
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Address added successfully!',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Reset the form and close the modal
+                        document.getElementById('addAddressForm').reset();
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addressModal'));
+                        modal.hide();
+                    });
+                } else {
+                    // Error - Show SweetAlert
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: 'An error occurred while adding the address.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // Show SweetAlert for error
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: 'An error occurred while adding the address.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+    });
+</script>
+
+
+
+
+
+
+<%- include("../../views/partials/user/header") %>
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="/" rel="nofollow">Home</a>
+                    <span></span> Shop
+                    <span></span> Your Cart
+                </div>
+            </div>
+        </div>
+        <section class="mt-50 mb-50">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table shopping-summery text-center clean">
+                                <thead>
+                                    <tr class="main-heading">
+                                        <th scope="col">Image</th>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Variant</th>
+                                        <th scope="col">Price</th>
+                                        <th scope="col">Quantity</th>
+                                        <th scope="col">Subtotal</th>
+                                        <th scope="col">Remove</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (cart && cart.items.length> 0) { %>
+                                        <% cart.items.forEach((item)=> { %>
+                                            <tr>
+                                                <td class="image product-thumbnail">
+                                                    <img src="/assets/login/<%= item.productImage[0] %>"
+                                                        alt="<%= item.name %>">
+                                                </td>
+                                                <td class="product-des product-name">
+                                                    <h5>
+                                                        <%= item.name %>
+                                                    </h5>
+                                                </td>
+                                                <td class="variant">
+                                                    <span>
+                                                        <%= item.variant.type || item.variant.weight %>
+                                                    </span>
+                                                </td>
+                                                <td class="price" data-title="Price">
+                                                    <span>₹<%= Math.round(item.variant.salePrice) %></span>
+                                                </td>
+                                                <td class="text-center" data-title="Stock">
+                                                    <div class="detail-qty border radius m-auto">
+                                                        <a href="#" class="qty-down"
+                                                            onclick="updateQuantity('<%= item.productId %>', '<%= item.variant.variantId %>', -1)">
+                                                            <i class="fi-rs-angle-small-down"></i>
+                                                        </a>
+                                                        <span class="qty-val"
+                                                            id="qty-<%= item.productId %>-<%= item.variant.variantId %>">
+                                                            <%= item.quantity %>
+                                                        </span>
+                                                        <a href="#" class="qty-up"
+                                                            onclick="updateQuantity('<%= item.productId %>', '<%= item.variant.variantId %>', +1)">
+                                                            <i class="fi-rs-angle-small-up"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                                <td class="text-right" data-title="Cart">
+                                                    <span
+                                                        id="subtotal-<%= item.productId %>-<%= item.variant.variantId %>">
+                                                        ₹<%= Math.round(item.quantity * item.variant.salePrice) %>
+                                                    </span>
+                                                </td>
+                                                <td class="action" data-title="Remove">
+                                                    <a href="#" class="text-muted"
+                                                        onclick="removeFromCart('<%= item.productId %>', '<%= item.variant.variantId %>')">
+                                                        <i class="fi-rs-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+        
+                                            <% }) %>
+        
+                                                <% } else { %>
+                                                    <tr>
+                                                        <td colspan="6" class="text-center">
+                                                            <p>Your cart is empty.</p>
+                                                        </td>
+                                                    </tr>
+                                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+        
+                        <% if (cart && cart.items.length> 0) { %>
+        
+                            <div class="cart-action text-end">
+        
+                                <a href="/checkout" class="btn"><i class="fi-rs-box-alt mr-10"></i> Proceed To
+                                    Checkout</a>
+        
+                            </div>
+        
+                            <div class="divider center_icon mt-50 mb-50"><i class="fi-rs-fingerprint"></i></div>
+                            <div class="row mb-50">
+                                <div class="col-lg-6 col-md-12">
+                                    <a href="/" class="btn"><i class="fi-rs-shopping-bag mr-10"></i>Continue
+                                        Shopping</a>
+                                </div>
+                            </div>
+                            <%}else{%>
+                                <div class="divider center_icon mt-50 mb-50"><i class="fi-rs-fingerprint"></i></div>
+                                <div class="row mb-50">
+                                    <div class="col-lg-6 col-md-12">
+                                        <a href="/" class="btn"><i class="fi-rs-shopping-bag mr-10"></i>Continue
+                                            Shopping</a>
+                                    </div>
+                                </div>
+                                <%}%>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        
+    </main>
+    <%- include("../../views/partials/user/footer") %>
+
+
+        <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+        <script>
+
+
+            function removeFromCart(productId, variantId) {
+                swal({
+                    title: "Are you sure?",
+                    text: "Do you want to remove this item from the cart?",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                }).then((willDelete) => {
+                    if (willDelete) {
+                        fetch('/cart/remove-item', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ productId, variantId }),
+                        })
+                            .then((response) => response.json())
+                            .then((data) => {
+                                if (data.success) {
+                                    swal("Success", data.message || "Item removed from cart successfully.", "success").then(() => {
+                                        location.reload(); // Reload the page after success
+                                    });
+                                } else {
+                                    swal("Error", data.message || "Failed to remove item from cart.", "error");
+                                }
+                            })
+                            .catch((error) => {
+                                console.error("Error removing item from cart:", error);
+                                swal("Error", "An error occurred. Please try again.", "error");
+                            });
+                    }
+                });
+            }
+
+
+            function updateQuantity(productId, variantId, change) {
+                fetch("/update-quantity", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ productId, variantId, change }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.success) {
+                            // Backend approved the update; update the frontend UI
+                            const qtySpan = document.querySelector(`#qty-${productId}-${variantId}`);
+                            if (qtySpan) qtySpan.textContent = data.updatedItem.quantity;
+
+                            const subtotalSpan = document.querySelector(`#subtotal-${productId}-${variantId}`);
+                            if (subtotalSpan) {
+                                const subtotal = Math.round(data.updatedItem.quantity * data.updatedItem.variantPrice);
+                                subtotalSpan.textContent = `₹${subtotal}`;
+                            }
+                        } else {
+                            // Backend rejected the update; show the error message
+                            swal("Error", data.message || "Failed to update quantity.", "error");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error updating quantity:", error);
+                        swal("Error", "An error occurred. Please try again.", "error");
+                    });
+            }
+
+        </script>
+
+
+
+        ------------------------------------------last updated
+
+        <%- include("../../views/partials/user/header") %>
+    <main class="main">
+        <div class="page-header breadcrumb-wrap">
+            <div class="container">
+                <div class="breadcrumb">
+                    <a href="/" rel="nofollow">Home</a>
+                    <span></span> Shop
+                    <span></span> Your Cart
+                </div>
+            </div>
+        </div>
+        <section class="mt-50 mb-50">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table shopping-summery text-center clean">
+                                <thead>
+                                    <tr class="main-heading">
+                                        <th scope="col">Image</th>
+                                        <th scope="col">Name</th>
+                                        <th scope="col">Variant</th>
+                                        <th scope="col">Price</th>
+                                        <th scope="col">Quantity</th>
+                                        <th scope="col">Subtotal</th>
+                                        <th scope="col">Remove</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (cart && cart.items.length > 0) { %>
+                                        <% cart.items.forEach((item) => { %>
+                                            <tr class="<%= item.outOfStock ? 'bg-light-danger' : '' %>">
+                                                <td class="image product-thumbnail">
+                                                    <img src="/assets/login/<%= item.productImage[0] %>" alt="<%= item.name %>">
+                                                </td>
+                                                <td class="product-des product-name">
+                                                    <h5><%= item.name %></h5>
+                                                </td>
+                                                <td class="variant">
+                                                    <span>
+                                                        <%= item.variant ? (item.variant.type || item.variant.weight) : 'N/A' %>
+                                                    </span>
+                                                </td>
+                                                <td class="price" data-title="Price">
+                                                    <span>
+                                                        <% if (item.variant && item.variant.salePrice > 0) { %>
+                                                            ₹<%= Math.round(item.variant.salePrice) %>
+                                                        <% } else { %>
+                                                            <span class="text-danger">Unavailable</span>
+                                                        <% } %>
+                                                    </span>
+                                                </td>
+                                                <td class="text-center" data-title="Stock">
+                                                    <% if (!item.outOfStock) { %>
+                                                        <div class="detail-qty border radius m-auto">
+                                                            <a href="#" class="qty-down" onclick="updateQuantity('<%= item.productId %>', '<%= item.variant.variantId %>', -1)">
+                                                                <i class="fi-rs-angle-small-down"></i>
+                                                            </a>
+                                                            <span class="qty-val" id="qty-<%= item.productId %>-<%= item.variant.variantId %>">
+                                                                <%= item.quantity %>
+                                                            </span>
+                                                            <a href="#" class="qty-up" onclick="updateQuantity('<%= item.productId %>', '<%= item.variant.variantId %>', +1)">
+                                                                <i class="fi-rs-angle-small-up"></i>
+                                                            </a>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <span class="text-danger">Out of Stock</span>
+                                                    <% } %>
+                                                </td>
+                                                <td class="text-right" data-title="Cart">
+                                                    <span id="subtotal-<%= item.productId %>-<%= item.variant.variantId %>">
+                                                        <% if (!item.outOfStock) { %>
+                                                            ₹<%= Math.round(item.quantity * item.variant.salePrice) %>
+                                                        <% } else { %>
+                                                            N/A
+                                                        <% } %>
+                                                    </span>
+                                                </td>
+                                                <td class="action" data-title="Remove">
+                                                    <a href="#" class="text-muted"
+                                                       onclick="removeFromCart('<%= item.productId %>', '<%= item.variant.variantId %>')">
+                                                        <i class="fi-rs-trash"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="7" class="text-center">
+                                                <p>Your cart is empty.</p>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+        
+                        <% if (cart && cart.items.length > 0) { %>
+                            <!-- Checkout Button -->
+                            <div class="cart-action text-end">
+                                <button id="checkout-btn" class="btn" 
+                                    <% if (cart.items.some(item => item.outOfStock)) { %> 
+                                        disabled 
+                                    <% } %> 
+                                    onclick="proceedToCheckout()">
+                                    <i class="fi-rs-box-alt mr-10"></i> Proceed To Checkout
+                                </button>
+                            </div>
+        
+                            <div class="divider center_icon mt-50 mb-50"><i class="fi-rs-fingerprint"></i></div>
+                        <% }  %>
+                            <div class="row mb-50">
+                                <div class="col-lg-6 col-md-12">
+                                    <a href="/shop" class="btn"><i class="fi-rs-shopping-bag mr-10"></i> Continue Shopping</a>
+                                </div>
+                            </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        
+        
+    </main>
+    <%- include("../../views/partials/user/footer") %>
+
+
+        <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+        <script>
+
+function proceedToCheckout() {
+    const hasOutOfStock = Array.from(document.querySelectorAll('.cart-item'))
+        .some((item) => item.dataset.outOfStock === "true");
+
+    if (hasOutOfStock) {
+        swal("Error", "Your cart contains out-of-stock items. Please remove them to proceed.", "error");
+        return;
+    }
+
+    // Redirect to the checkout page
+    window.location.href = "/checkout";
+}
+
+
+
+            function removeFromCart(productId, variantId) {
+                swal({
+                    title: "Are you sure?",
+                    text: "Do you want to remove this item from the cart?",
+                    icon: "warning",
+                    buttons: true,
+                    dangerMode: true,
+                }).then((willDelete) => {
+                    if (willDelete) {
+                        fetch('/cart/remove-item', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ productId, variantId }),
+                        })
+                            .then((response) => response.json())
+                            .then((data) => {
+                                if (data.success) {
+                                    swal("Success", data.message || "Item removed from cart successfully.", "success").then(() => {
+                                        location.reload(); // Reload the page after success
+                                    });
+                                } else {
+                                    swal("Error", data.message || "Failed to remove item from cart.", "error");
+                                }
+                            })
+                            .catch((error) => {
+                                console.error("Error removing item from cart:", error);
+                                swal("Error", "An error occurred. Please try again.", "error");
+                            });
+                    }
+                });
+            }
+
+
+            function updateQuantity(productId, variantId, change) {
+                fetch("/update-quantity", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ productId, variantId, change }),
+                })
+                    .then((response) => response.json())
+                    .then((data) => {
+                        if (data.success) {
+                            // Backend approved the update; update the frontend UI
+                            const qtySpan = document.querySelector(`#qty-${productId}-${variantId}`);
+                            if (qtySpan) qtySpan.textContent = data.updatedItem.quantity;
+
+                            const subtotalSpan = document.querySelector(`#subtotal-${productId}-${variantId}`);
+                            if (subtotalSpan) {
+                                const subtotal = Math.round(data.updatedItem.quantity * data.updatedItem.variantPrice);
+                                subtotalSpan.textContent = `₹${subtotal}`;
+                            }
+                        } else {
+                            // Backend rejected the update; show the error message
+                            swal("Error", data.message || "Failed to update quantity.", "error");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error updating quantity:", error);
+                        swal("Error", "An error occurred. Please try again.", "error");
+                    });
+            }
+
+        </script>
+
+

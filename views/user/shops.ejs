@@ -77,91 +77,119 @@
                         </div>
                         <div class="row product-grid-4">
 
-                            <%for(let i=0;i<products.length;i++){%>
-
-                                <div class="col-lg-4 col-md-4 col-12 col-sm-6">
-                                    <div class="product-cart-wrap mb-30">
-                                        <div class="product-img-action-wrap">
-                                            <div class="product-img product-img-zoom">
-                                                <a href="/productDetails?id=<%=products[i]._id%>">
-                                                    <img class="default-img"
-                                                        src="/assets/login/<%=products[i].productImages[0]%>" alt="">
-                                                    <!-- <img class="hover-img" src="assets/imgs/shop/product-2-2.jpg" alt=""> ----------->
-                                                </a>
+                            <div class="row">
+                                <% for (let i = 0; i < products.length; i++) { %>
+                                    <div class="col-lg-4 col-md-4 col-12 col-sm-6">
+                                        <div class="product-cart-wrap mb-30">
+                                            <!-- Product Image -->
+                                            <div class="product-img-action-wrap">
+                                                <div class="product-img product-img-zoom">
+                                                    <a href="/productDetails?id=<%= products[i]._id %>">
+                                                        <img class="default-img"
+                                                            src="/assets/login/<%= products[i].productImages && products[i].productImages[0] %>"
+                                                            alt="<%= products[i].productName || 'Product Image' %>">
+                                                    </a>
+                                                </div>
+                                                <!-- Quick View & Wishlist -->
+                                                <div class="product-action-1">
+                                                    <a aria-label="Quick view" class="action-btn hover-up" data-bs-toggle="modal"
+                                                        data-bs-target="#quickViewModal" onclick="openQuickView('<%= products[i]._id %>')">
+                                                        <i class="fi-rs-search"></i>
+                                                    </a>
+                                                    <a aria-label="Add To Wishlist" class="action-btn hover-up wishlist-btn"
+                                                        data-product-id="<%= products[i]._id %>">
+                                                        <i class="fi-rs-heart"></i>
+                                                    </a>
+                                                </div>
+                                                <div class="product-badges product-badges-position product-badges-mrg">
+                                                    <span class="hot">Hot</span>
+                                                </div>
                                             </div>
-                                            <div class="product-action-1">
-                                                <a aria-label="Quick view" class="action-btn hover-up"
-                                                    data-bs-toggle="modal" data-bs-target="#quickViewModal">
-                                                    <i class="fi-rs-search"></i></a>
-                                                    
-                                                <!-- <a aria-label="Add To Wishlist" class="action-btn hover-up"
-                                                    href="/wishList"><i class="fi-rs-heart"></i></a> -->
-
-                                                    <a aria-label="Add To Wishlist" class="action-btn hover-up"
-                                                    onclick="addToWishlist('<%=products[i]._id%>')"><i class="fi-rs-heart"></i></a>
-
-                                            </div>
-                                            <div class="product-badges product-badges-position product-badges-mrg">
-                                                <span class="hot">Hot</span>
-                                            </div>
-                                        </div>
-                                        <div class="product-content-wrap">
-                                            <div class="product-category">
-                                                <% if (products[i].category) { %>
-                                                    <a href="shop-grid-right.html">
-                                                        <%=products[i].category.name%>
+                                    
+                                            <!-- Product Details -->
+                                            <div class="product-content-wrap">
+                                                <!-- Category -->
+                                                <div class="product-category">
+                                                    <% if (products[i].category) { %>
+                                                    <a href="/shop?category=<%= products[i].category._id %>">
+                                                        <%= products[i].category.name %>
                                                     </a>
                                                     <% } else { %>
-                                                        <span>Uncategorized</span>
-                                                        <% } %>
-                                            </div>
-                                            <h2><a href="shop-product-right.html">
-                                                    <%=products[i].productName%>
-                                                </a></h2>
-                                            <div class="rating-result" title="">
-                                              
-                                                <% 
-                                                const productOffer = products[i].offer || 0; // Product-specific offer
-                                                const categoryOffer = products[i].category.categoryOffer || 0; // Category-specific offer
-                                                const higherOffer = Math.max(productOffer, categoryOffer); // Get the higher offer
-                                            
-                                                // Calculate the sale price based on the higher offer
-                                                const salePrice = Math.round(products[i].regularPrice - (products[i].regularPrice * higherOffer / 100));
-                                                %>
-                                            
+                                                    <span>Uncategorized</span>
+                                                    <% } %>
+                                                </div>
                                     
-                                                <% if (higherOffer > 0) { %>
+                                                <!-- Product Name -->
+                                                <h2>
+                                                    <a href="/productDetails?id=<%= products[i]._id %>">
+                                                        <%= products[i].productName || 'Product Name' %>
+                                                    </a>
+                                                </h2>
+                                    
+                                                <!-- Offer Logic -->
+                                                <div class="rating-result">
+                                                    <% 
+                                                    let lowestSalePrice = null; 
+                                                    let highestRegularPrice = 0;
+                                                    let higherOffer = 0;
+                                    
+                                                    if (products[i].variants && products[i].variants.length > 0) {
+                                                        for (let j = 0; j < products[i].variants.length; j++) {
+                                                            const variant = products[i].variants[j];
+                                                            const salePrice = variant.salePrice || 0;
+                                                            const regularPrice = variant.regularPrice || 0;
+                                    
+                                                            // Determine the lowest sale price and highest regular price
+                                                            if (lowestSalePrice === null || salePrice < lowestSalePrice) {
+                                                                lowestSalePrice = salePrice;
+                                                            }
+                                                            if (regularPrice > highestRegularPrice) {
+                                                                highestRegularPrice = regularPrice;
+                                                            }
+                                                        }
+                                                    }
+                                    
+                                                    // Calculate the higher offer
+                                                    higherOffer = Math.max(products[i].offer || 0, products[i].category?.categoryOffer || 0);
+                                    
+                                                    // Adjust sale price based on higher offer
+                                                    if (higherOffer > 0 && highestRegularPrice > 0) {
+                                                        lowestSalePrice = Math.round(highestRegularPrice - (highestRegularPrice * higherOffer / 100));
+                                                    }
+                                                    %>
+                                    
+                                                    <% if (higherOffer > 0) { %>
                                                     <span class="save-price font-md color3 ml-15">
                                                         <%= higherOffer %>% Off
                                                     </span>
-                                                <% } %>
-                                            
-                                            </div>
-                                            <div class="product-price">
-                                                <span>
-                                                    <%= salePrice %>
-                                                </span>
-                                                <span class="old-price">
-                                                    <%= products[i].regularPrice %>
-                                                </span>
-                                            </div>
-                                            
-                                                                                                                          
-                                           <div class="product-action-1 show">
-
-                                                <a aria-label="Add To Cart" class="action-btn hover-up" href="#"><i
-                                                        class="fi-rs-shopping-bag-add"
-                                                        onclick="addToCart('<%= products[i]._id %>')"></i>
-
-                                                </a>
-
+                                                    <% } %>
+                                                </div>
+                                    
+                                                <!-- Product Price -->
+                                                <div class="product-price">
+                                                    <% if (lowestSalePrice !== null) { %>
+                                                    <span>₹<%= lowestSalePrice %></span>
+                                                    <% } else { %>
+                                                    <span>Price Unavailable</span>
+                                                    <% } %>
+                                                    <% if (highestRegularPrice > 0) { %>
+                                                    <span class="old-price">₹<%= highestRegularPrice %></span>
+                                                    <% } %>
+                                                </div>
+                                    
+                                                <!-- Add to Cart -->
+                                                <div class="product-action-1 show">
+                                                    <a aria-label="Add To Cart" class="action-btn hover-up" href="#">
+                                                        <i class="fi-rs-shopping-bag-add" onclick="addToCart('<%= products[i]._id %>')"></i>
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <%}%>
-
+                                    <% } %>
+                                    
+                            </div>
+                            
                         </div>
 
 

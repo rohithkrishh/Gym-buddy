@@ -107,9 +107,12 @@
         }
       };
 
-      nameInput.addEventListener("input", () => {
-        validateField(nameInput, nameInput.value.trim().length >= 3, nameError, "Full name must be at least 3 characters long.");
-      });
+      
+    nameInput.addEventListener("input", () => {
+    const trimmedValue = nameInput.value.trim();
+    console.log(`Original: "${nameInput.value}", Trimmed: "${trimmedValue}"`);
+    validateField(nameInput, trimmedValue.length >= 3, nameError, "Full name must be at least 3 characters long.");
+  });
 
       emailInput.addEventListener("input", () => {
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -145,5 +148,7 @@
       });
     });
   </script>
+
+  
 </body>
 </html>

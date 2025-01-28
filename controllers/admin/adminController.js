@@ -18,28 +18,6 @@ res.render("adminlogin",{message:null})
 
 }
 
-// const login =async (req,res)=>{
-// try {
-   
-//     const {email,password} = req.body;
-//     const admin = await User.findOne({email,isAdmin:true})
-//     if(admin){
-//         const passwordMatch =  await bcrypt.compare(password,admin.password);
-//         if(passwordMatch){
-//             req.session.admin = true;
-//             return res.redirect("/admin/dashboard")
-//         }else{
-//             return res.redirect("/login")
-//         }
-//     }
-// } catch (error) {
-//    console.log("login error",error);
-//    return res.redirect("/pageerror")
-    
-// }
-
-// }
-
 
 const login = async (req, res) => {
   try {
@@ -51,7 +29,7 @@ console.log("---------",req.body)
     if (!admin) {
         console.log("-----notadmin");
         
-      return res.redirect("/admin/login"); // Redirect to login if admin user not found
+      return res.redirect("/admin/login"); 
     }
 
     // Check if the password matches
@@ -115,6 +93,8 @@ res.redirect("/admin/login")
 
 }
 
+
+
 module.exports = {
-    loadLogin,login,loadDashboard,pageerror,logout
+    loadLogin,login,loadDashboard,pageerror,logout,
 }

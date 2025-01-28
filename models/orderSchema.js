@@ -14,7 +14,7 @@ const orderSchema = new Schema(
         product: { type: Schema.Types.ObjectId, ref: "Product", required: true },
         variant: { type: Schema.Types.ObjectId, ref: "Variant" },
         quantity: { type: Number, required: true },
-        price: { type: Number, required: true },
+        salePrice: { type: Number, required: true },
       }
     ],
     shippingAddress: {
@@ -41,7 +41,7 @@ const orderSchema = new Schema(
     orderStatus: {
       type: String,
       required: true,
-      enum: ["Pending", "Processing", "Shipped", "Out for Delivery", "Delivered", "Cancelled"],
+      enum: ["Pending", "Processing", "Shipped", "Out for Delivery", "Delivered", "Cancelled","Returned"],
       default: "Pending"
     },
     coupon: {
@@ -62,23 +62,4 @@ const orderSchema = new Schema(
 
 const Order = mongoose.model("Order", orderSchema);
 module.exports= Order
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

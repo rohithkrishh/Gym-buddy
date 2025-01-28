@@ -26,22 +26,20 @@ const loadHomepage = async (req, res) => {
        
         const categories = await Category.find({ isListed: true });
 
-      
         const productData = await Product.find({
             isBlocked: false,
             category: { $in: categories.map((category) => category._id) },
             variants: { $elemMatch: { stock: { $gt: 0 } } }, 
-        }).sort({ createdAt: 1 });
+        }).populate("category", "name categoryOffer")
+        .sort({ createdAt: 1 });
 
-       
-       
         if (req.isAuthenticated()) {
             const userData = await User.findOne({ _id: req.user._id });
            
-            return res.render("home", { user: userData, products: productData });
+            return res.render("home", { user: userData, products: productData, });
         } else {
             
-            return res.render("home", { user: null, products: productData });
+            return res.render("home", { user: null, products: productData, });
         }
     } catch (error) {
         console.error("Error loading homepage:", error);
@@ -427,7 +425,6 @@ const filterProduct = async (req, res) => {
 };
 
 
-
 const filterByPrice = async (req, res) => {
     try {
         const user = req.session.user;
@@ -446,9 +443,9 @@ const filterByPrice = async (req, res) => {
         let sortOption = {};
 
         if (sortType === "lowToHigh") {
-            sortOption["variants.price"] = 1; 
+            sortOption["variants.regularPrice"] = 1; 
         } else if (sortType === "highToLow") {
-            sortOption["variants.price"] = -1; 
+            sortOption["variants.regularPrice"] = -1; 
         } else if (sortType === "aA-zZ") {
             sortOption.productName = 1; 
         } else if (sortType === "zZ-aA") {
@@ -491,7 +488,6 @@ const filterByPrice = async (req, res) => {
 };
 
 
-
 const productDetails = async (req, res) => {
     try {
         const userId = req.session.user;
@@ -499,7 +495,7 @@ const productDetails = async (req, res) => {
         
         const userData = userId ? await User.findById(userId).lean() : null;
 
-      
+        
         const { id: productId } = req.query;
 
         
@@ -508,31 +504,43 @@ const productDetails = async (req, res) => {
             throw new Error("Product not found");
         }
 
-       
-        const findCategory = product.category;
+        // Fetch category offer
+        const categoryOffer = product.category?.categoryOffer || 0;
 
-       
-        const categoryOffer = findCategory?.categoryOffer || 0; 
+        // Fetch product offer
         const productOffer = product.productOffer || 0;
-        const totalOffer = categoryOffer + productOffer;
 
-        const variants = product.variants || [];
-        const defaultVariant = variants.length > 0 ? variants[0] : null;
+        
+        const highestOffer = Math.max(categoryOffer, productOffer);
+        console.log("highest",highestOffer)
 
-        res.render('product-details', {
-            user: userData,
-            product, 
-            variants, 
-            defaultVariant, 
-            category: findCategory, 
-            totalOffer, 
+        // Update sale price for all variants based on the highest offer
+        const variants = product.variants.map((variant) => {
+            const salePrice = variant.regularPrice - (variant.regularPrice * highestOffer) / 100;
+            return {
+                ...variant,
+                salePrice: parseFloat(salePrice.toFixed(2)), 
+            };
         });
 
+        // Select the default variant (first one or fallback)
+        const defaultVariant = variants.length > 0 ? variants[0] : null;
+
+        // Render the product details page
+        res.render('product-details', {
+            user: userData,                
+            product,                      
+            variants,                    
+            defaultVariant,               
+            category: product.category,   
+            highestOffer,                 
+        });
     } catch (error) {
         console.error("Error fetching product details:", error);
         res.redirect("/pageNotFound");
     }
 };
+
 
 
 

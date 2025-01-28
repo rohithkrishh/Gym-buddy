@@ -1,4 +1,5 @@
-const Category = require("../../models/categorySchema")
+const Category = require("../../models/categorySchema");
+const Product = require("../../models/productSchema");
 const product = require("../../models/productSchema")
 
 const categoryInfo = async(req,res)=>{
@@ -99,31 +100,73 @@ const addCategory = async (req, res) => {
 };
 
 
-const addCategoryOffer = async (req,res)=>{
-try{
-    const percentage = parseInt(req.body.percentage);
+// const addCategoryOffer = async (req,res)=>{
+// try{
+//     const percentage = parseInt(req.body.percentage);
    
-    const categoryId = req.body.categoryId;
+//     const categoryId = req.body.categoryId;
     
-    const category = await Category.findById(categoryId);
-    
+//     const category = await Category.findById(categoryId);
+//     const productData = await Product.find()
+//     // console.log("product",productData)
 
-    if(!category){
-        return res.status(400).json({status:false,messsage:"Category not found"});
+//     if(!category){
+//         return res.status(400).json({status:false,messsage:"Category not found"});
+//     }
+
+//     category.categoryOffer = percentage;
+//     const productOffer = parseFloat(productData.productOffer || 0);
+
+//     // Get the highest category offer
+//     const categoryOffer = category.map((cat) => cat.categoryOffer || 0);
+
+//     const highestOffer = Math.max(productOffer, categoryOffer);
+   
+
+//     await category.save();
+   
+//     res.status(200).json({status:true});
+
+//  } catch (error){
+   
+// res.status(500).json({status:false,message:"Internal Server Error"})
+//     }
+
+// }
+
+const addCategoryOffer = async (req, res) => {
+    try {
+        const percentage = parseInt(req.body.percentage);
+        const categoryId = req.body.categoryId;
+
+        // Find the category by ID
+        const category = await Category.findById(categoryId);
+        if (!category) {
+            return res.status(400).json({ status: false, message: "Category not found" });
+        }
+
+        // Update the category offer
+        category.categoryOffer = percentage;
+        await category.save();
+
+        // Find all products under this category
+        const productData = await Product.find({ category: categoryId });
+
+        // Update the highest offer for each product
+        for (const product of productData) {
+            const productOffer = parseFloat(product.productOffer || 0); 
+            const highestOffer = Math.max(productOffer, percentage);  
+            product.highestOffer = highestOffer;                     
+            await product.save();
+        }
+
+        res.status(200).json({ status: true, message: "Category offer and product highest offers updated" });
+    } catch (error) {
+        console.error("Error updating category offer:", error);
+        res.status(500).json({ status: false, message: "Internal Server Error" });
     }
+};
 
-    category.categoryOffer = percentage;
-
-    await category.save();
-   
-    res.json({status:true});
-    
- } catch (error){
-   
-res.status(500).json({status:false,message:"Internal Server Error"})
-    }
-
-}
 
 
 const removeCategoryOffer = async (req,res)=>{

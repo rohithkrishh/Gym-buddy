@@ -6447,7 +6447,7 @@ h6.post-title {
 .header-style-1 .header-top-ptb-1 {
   padding: 13px 0;
   border-bottom: 3px solid #39b4ac;
-  background-color: #d8f4e2;
+  background-color:orange;
   background-image: none;
 }
 
@@ -7622,6 +7622,7 @@ span.fi-rs-apps {
   list-style: outside none none;
   margin: 0;
   padding: 0;
+  
 }
 
 .footer-list li {
@@ -7683,6 +7684,7 @@ span.fi-rs-apps {
 
 .footer-mid .widget-title {
   margin: 15px 0 20px 0;
+  
 }
 
 /*LAYOUT -> SPACING**/
@@ -7700,6 +7702,7 @@ span.fi-rs-apps {
 
 .section-padding {
   padding: 25px 0;
+ 
 }
 
 .ptb-0 {
@@ -7732,6 +7735,7 @@ span.fi-rs-apps {
 
 .ptb-50 {
   padding: 50px 0;
+  
 }
 
 .ptb-60 {

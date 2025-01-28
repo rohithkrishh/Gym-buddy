@@ -156,25 +156,22 @@
                 </div>
             </div>
         </div>
+       
         <section class="mt-50 mb-50">
             <div class="container">
                 <div class="row">
                     <div class="ProductContainer">
                         <div class="product-detail">
                             <div class="product-images">
-                                <div class="main-image-container" onmousemove="zoomImage(event)"
-                                    onmouseleave="resetZoom(event)">
-                                    <img id="mainImage" src="/assets/login/<%= product.productImages[0] %>"
-                                        alt="Product Image" class="main-image">
+                                <div class="main-image-container" onmousemove="zoomImage(event)" onmouseleave="resetZoom(event)">
+                                    <img id="mainImage" src="/assets/login/<%= product.productImages[0] %>" alt="Product Image" class="main-image">
                                 </div>
                                 <div class="thumbnail-strip">
-                                    <% for (let i=0; i < product.productImages.length; i++) { %>
+                                    <% for (let i = 0; i < product.productImages.length; i++) { %>
                                         <div>
-                                            <img src="/assets/login/<%= product.productImages[i] %>"
-                                                alt="Product Thumbnail <%= i + 1 %>" class="thumbnail active"
-                                                onclick="changeImage(this)">
+                                            <img src="/assets/login/<%= product.productImages[i] %>" alt="Product Thumbnail <%= i + 1 %>" class="thumbnail active" onclick="changeImage(this)">
                                         </div>
-                                        <% } %>
+                                    <% } %>
                                 </div>
                             </div>
                             <div class="col-md-6 col-sm-12 col-xs-12">
@@ -184,9 +181,7 @@
                                     </h2>
                                     <div class="product-detail-rating">
                                         <div class="pro-details-brand">
-                                            <span>Category: <a href="shop-grid-right.html">
-                                                    <%= category.name %>
-                                                </a></span>
+                                            <span>Category: <a href="shop-grid-right.html"><%= category.name %></a></span>
                                         </div>
                                     </div>
                                     <!-- Dynamic Price and Offer -->
@@ -194,82 +189,32 @@
                                         <div class="product-price primary-color float-left">
                                             <ins>
                                                 <span class="text-brand" id="dynamic-price">
-                                                    ₹<%= product.variants[0]?.price || product.salePrice %>
+                                                    ₹<%= product.variants[0].salePrice %>
                                                 </span>
                                             </ins>
                                             <ins>
-                                                <span class="old-price font-md ml-15">
-                                                    ₹<%= product.regularPrice %>
+                                                <span class="old-price font-md ml-15" id="dynamic-regular-price">
+                                                    ₹<%= product.variants[0].regularPrice %>
                                                 </span>
                                             </ins>
-                                            <% if (totalOffer) { %>
+                                            <% if (highestOffer) { %>
                                                 <span class="save-price font-md color3 ml-15">
-                                                    <% const discount=Math.round((totalOffer / product.regularPrice) *
-                                                        100); %>
-                                                        <%= discount %>% Off
+                                                    <%= highestOffer %>% Off
                                                 </span>
-                                                <% } %>
+                                            <% } %>
                                         </div>
+                                        
                                     </div>
                                     <div class="bt-1 border-color-1 mt-15 mb-15"></div>
                                     <div class="short-desc mb-30">
-                                        <p>
-                                            <%= product.description %>
-                                        </p>
+                                        <p><%= product.description %></p>
                                     </div>
-
+        
                                     <!-- Variant Selector -->
-                                    <!-- <% if (product.variants && product.variants.length > 0) { %>
-                                                <div class="variant-selector mb-30">
-                                                    <label for="variant-select"><strong>Select Variant:</strong></label>
-                                                    <select id="variant-select" class="form-select" onchange="updateVariantDetails()">
-                                                        <% product.variants.forEach((variant, index) => { %>
-                                                            <option value="<%= index %>">
-                                                                <% if (variant.categoryType === 'strength') { %>
-                                                                    Weight: <%= variant.weight %> kg  %>
-                                                                <% } else if (variant.categoryType === 'cardio') { %>
-                                                                    Type: <%= variant.type %>  %>
-                                                                <% } %>
-                                                                <!-- (Stock: <%= variant.stock %>) -------------
-                                                            </option>
-                                                        <% }); %>
-                                                    </select>
-                                                </div>
-                                            <% } %>
-                
-                                            <!-- Stock and Availability --------------------
-                                            <ul class="product-meta font-xs color-grey mt-50">
-                                                <li class="mb-5">SKU: <span id="dynamic-sku"><%= product.variants[0]?.sku || 'N/A' %></span></li>
-                                                <li>Availability:<span id="dynamic-stock" class="in-stock text-success ml-5">
-                                                        <%= product.variants[0]?.stock || 0 %> Items In Stock
-                                                    </span></li>
-                                            </ul>
-                
-                                            <div class="bt-1 border-color-1 mt-30 mb-30"></div>
-                                           
-
-                                            <div class="detail-extralink">
-                                               
-                                                <% if (product.variants.length) { %>
-                                                    <form id="add-to-cart-form">
-                                                        <input type="hidden" name="productId" value="<%= product._id %>">
-                                                        <input type="number" name="quantity" value="1" min="1" max="<%= product.quantity %>" required>
-                                                        <button type="button" class=" button mt-5 button-add-to-cart" id="addToCartBtn">Add to Cart</button>
-                                                    </form>
-                                                <% } else { %>
-                                                    <button class=" button button-add-to-cart" disabled>Out of Stock</button>
-                                                <% } %> 
-                                                <!-- <a class="action-btn hover-up" href="#"><i class="fi-rs-heart"></i> Wishlist</a> ---------
-                                            
-                                            </div> -->
-
-
-
-                                    <% if (product.variants && product.variants.length> 0) { %>
+                                    <% if (product.variants && product.variants.length > 0) { %>
                                         <div class="variant-selector mb-30">
                                             <label for="variant-select"><strong>Select Variant:</strong></label>
-                                            <select id="variant-select" class="form-select"
-                                                onchange="updateVariantDetails()">
+                                            <select id="variant-select" class="form-select" onchange="updateVariantDetails()">
                                                 <% product.variants.forEach((variant, index) => { %>
                                                     <option value="<%= index %>" <%= variant.stock <= 0 ? 'disabled' : '' %>>
                                                         <% if (variant.categoryType === 'strength') { %>
@@ -280,55 +225,40 @@
                                                         (Stock: <%= variant.stock %>)
                                                     </option>
                                                 <% }); %>
-                                                
                                             </select>
                                         </div>
+                                    <% } %>
+        
+                                    <!-- Stock and Availability -->
+                                    <ul class="product-meta font-xs color-grey mt-50">
+                                        <li class="mb-5">SKU: <span id="dynamic-sku"><%= product.variants[0]?.sku || 'N/A' %></span></li>
+                                        <li>Availability: <span id="dynamic-stock" class="in-stock text-success ml-5">
+                                            <%= product.variants[0]?.stock || 0 %> Items In Stock
+                                        </span></li>
+                                    </ul>
+        
+                                    <div class="bt-1 border-color-1 mt-30 mb-30"></div>
+        
+                                    <div class="detail-extralink">
+                                        <% if (product.variants.length) { %>
+                                            <form id="add-to-cart-form">
+                                                <input type="hidden" name="productId" value="<%= product._id %>">
+                                                <input type="hidden" name="variantId" id="variantId" value="<%= product.variants[0]?._id || '' %>">
+                                                <input type="number" name="quantity" value="1" min="1" id="quantity-input" required>
+                                                <button type="button" class="button mt-5 button-add-to-cart" id="addToCartBtn">Add to Cart</button>
+                                            </form>
+                                        <% } else { %>
+                                            <button class="button button-add-to-cart" disabled>Out of Stock</button>
                                         <% } %>
-
-                                            <!-- Stock and Availability -->
-                                            <ul class="product-meta font-xs color-grey mt-50">
-                                                <li class="mb-5">SKU: <span id="dynamic-sku">
-                                                        <%= product.variants[0]?.sku || 'N/A' %>
-                                                    </span></li>
-                                                <li>Availability: <span id="dynamic-stock"
-                                                        class="in-stock text-success ml-5">
-                                                        <%= product.variants[0]?.stock || 0 %> Items In Stock
-                                                    </span></li>
-                                            </ul>
-
-                                            <div class="bt-1 border-color-1 mt-30 mb-30"></div>
-
-                                            <div class="detail-extralink">
-                                                <% if (product.variants.length) { %>
-                                                    <form id="add-to-cart-form">
-                                                        <input type="hidden" name="productId"
-                                                            value="<%= product._id %>">
-                                                        <input type="hidden" name="variantId" id="variantId"
-                                                            value="<%= product.variants[0]?._id || '' %>">
-                                                        <input type="number" name="quantity" value="1" min="1"
-                                                            id="quantity-input" required>
-                                                        <button type="button" class="button mt-5 button-add-to-cart"
-                                                            id="addToCartBtn">Add to Cart</button>
-                                                    </form>
-                                                    <% } else { %>
-                                                        <button class="button button-add-to-cart" disabled>Out of
-                                                            Stock</button>
-                                                        <% } %>
-                                            </div>
-
-
-
-
-                                            <!-- Detail Info -->
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
         </section>
-
-
-
+        
 
         <div class="row">
             <div class="col-lg-10 m-auto entry-main-content">
@@ -623,14 +553,44 @@
         }
 
   
-    function updateVariantDetails() {
+//     function updateVariantDetails() {
+//     const selectedVariantIndex = document.getElementById("variant-select").value;
+//     const variants = <%- JSON.stringify(product.variants) %>;
+
+//     const selectedVariant = variants[selectedVariantIndex];
+//     if (selectedVariant) {
+//         document.getElementById("dynamic-price").innerText = `₹${selectedVariant.price}`;
+//         document.getElementById("dynamic-stock").innerText = `${selectedVariant.stock} Items In Stock`;
+//         document.getElementById("dynamic-sku").innerText = selectedVariant.sku;
+
+//         // Update the variantId in the hidden input field
+//         document.getElementById("variantId").value = selectedVariant._id;
+//     }
+// }
+
+
+
+
+function updateVariantDetails() {
     const selectedVariantIndex = document.getElementById("variant-select").value;
     const variants = <%- JSON.stringify(product.variants) %>;
 
     const selectedVariant = variants[selectedVariantIndex];
     if (selectedVariant) {
-        document.getElementById("dynamic-price").innerText = `₹${selectedVariant.price}`;
+        // Round the salePrice and regularPrice to the nearest integer
+        const roundedSalePrice = Math.round(selectedVariant.salePrice);
+        const roundedRegularPrice = Math.round(selectedVariant.regularPrice);
+
+        // Update salePrice
+        document.getElementById("dynamic-price").innerText = `₹${roundedSalePrice}`;
+
+        // Update regularPrice
+        document.getElementById("dynamic-regular-price").innerText = `₹${roundedRegularPrice}`;
+
+        // Update stock
         document.getElementById("dynamic-stock").innerText = `${selectedVariant.stock} Items In Stock`;
+
+        // Update SKU
         document.getElementById("dynamic-sku").innerText = selectedVariant.sku;
 
         // Update the variantId in the hidden input field

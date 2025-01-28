@@ -10,6 +10,7 @@ const { clearScreenDown } = require("readline");
 
 
 
+
  const getProductAddPage = async (req, res) => {
     try {
         const { page = 1, search = '' } = req.query;
@@ -87,7 +88,7 @@ const addProducts = async (req, res) => {
         if (Array.isArray(products.variants) && products.variants.length > 0) {
             for (const variant of products.variants) {
                
-                if (!variant.price || !variant.stock || !variant.sku) {
+                if (!variant.regularPrice || !variant.stock || !variant.sku) {
                     return res.status(400).json({
                         error: "Each variant must have price, stock, and SKU.",
                     });
@@ -109,7 +110,8 @@ const addProducts = async (req, res) => {
                     categoryType,
                     weight: categoryType === "strength" ? parseFloat(variant.weight) : undefined,
                     type: categoryType === "cardio" ? variant.type : undefined,
-                    price: parseFloat(variant.price),
+                    regularPrice: parseFloat(variant.regularPrice),
+                    salePrice:parseFloat(variant.salePrice),
                     stock: parseInt(variant.stock, 10),
                     sku: variant.sku.trim(),
                 });
@@ -118,17 +120,27 @@ const addProducts = async (req, res) => {
             return res.status(400).json({ error: "Variants are required and must be an array." });
         }
 
+         // Calculate highest offer
+        const productOffer = parseFloat(products.productOffer || 0);
+        const categoryOffer = category.categoryOffer || 0; 
+        const highestOffer = Math.max(productOffer, categoryOffer);
+
+        // Calculate sale price for the product
+        // const regularPrice = parseFloat(products.regularPrice);
+        // const salePrice = highestOffer
+        //     ? regularPrice - (regularPrice * highestOffer) / 100
+        //     : regularPrice;
+
         // Create a new product
         const newProduct = new Product({
             productName: products.productName,
             description: products.description,
             brand: products.brand,
             category: category._id,
-            regularPrice: parseFloat(products.regularPrice),
-            salePrice: parseFloat(products.salePrice),
             productImages: images,
             status: 'available',
             variants,
+            highestOffer
         });
 
         console.log("New Product:", newProduct);
@@ -145,50 +157,246 @@ const addProducts = async (req, res) => {
 };
 
 
-const getAllProducts = async (req,res)=>{
+// const addProductss = async (req, res) => {
+//     try {
+//         const products = req.body;
+//         console.log("Received products:", products);
 
+//         // Extract and validate category
+//         const categoryValue = products.category;
+//         const [categoryId, categoryType] = categoryValue.split("|");
+
+//         if (!categoryId || !categoryType) {
+//             return res.status(400).json({ error: "Invalid category format." });
+//         }
+
+//         const category = await Category.findById(categoryId);
+//         if (!category || category.type !== categoryType) {
+//             return res.status(400).json({ error: "Invalid category data." });
+//         }
+
+//         const productExists = await Product.findOne({ productName: products.productName });
+//         if (productExists) {
+//             return res.status(400).json({ error: "Product already exists, please try with another name." });
+//         }
+
+//         // Image resizing and saving
+//         const images = [];
+//         if (req.files && req.files.length > 0) {
+//             for (let file of req.files) {
+//                 const originalImagePath = file.path;
+//                 const resizedImagePath = path.join("public", "assets", "product-images", file.filename);
+//                 await sharp(originalImagePath)
+//                     .resize({ width: 440, height: 440 })
+//                     .toFile(resizedImagePath);
+//                 images.push(file.filename);
+//             }
+//         } else {
+//             return res.status(400).json({ error: "At least one product image is required." });
+//         }
+
+//         // Parse and validate variants
+//         const variants = [];
+//         if (Array.isArray(products.variants) && products.variants.length > 0) {
+//             for (const variant of products.variants) {
+//                 if (!variant.regularPrice || !variant.stock || !variant.sku) {
+//                     return res.status(400).json({
+//                         error: "Each variant must have price, stock, and SKU.",
+//                     });
+//                 }
+
+//                 // Dynamic validation for categoryType
+//                 if (categoryType === "strength" && !variant.weight) {
+//                     return res.status(400).json({
+//                         error: "Weight is required for strength variants.",
+//                     });
+//                 } else if (categoryType === "cardio" && !variant.type) {
+//                     return res.status(400).json({
+//                         error: "Type is required for cardio variants.",
+//                     });
+//                 }
+
+//                 // Ensure salePrice does not exceed regularPrice
+//                 if (variant.salePrice > variant.regularPrice) {
+//                     return res.status(400).json({
+//                         error: `Sale price cannot exceed regular price for SKU: ${variant.sku}`,
+//                     });
+//                 }
+
+//                 // Add validated variant to the array
+//                 variants.push({
+//                     categoryType,
+//                     weight: categoryType === "strength" ? parseFloat(variant.weight) : undefined,
+//                     type: categoryType === "cardio" ? variant.type : undefined,
+//                     regularPrice: parseFloat(variant.regularPrice),
+//                     salePrice: parseFloat(variant.salePrice),
+//                     stock: parseInt(variant.stock, 10),
+//                     sku: variant.sku.trim(),
+//                 });
+//             }
+//         } else {
+//             return res.status(400).json({ error: "Variants are required and must be an array." });
+//         }
+
+//         // Calculate highest offer
+//         const productOffer = parseFloat(products.productOffer || 0);
+//         const categoryOffer = category.categoryOffer || 0; // Assume category.offer exists in your Category model
+//         const highestOffer = Math.max(productOffer, categoryOffer);
+
+//         // Calculate sale price for the product
+//         const regularPrice = parseFloat(products.regularPrice);
+//         const salePrice = highestOffer
+//             ? regularPrice - (regularPrice * highestOffer) / 100
+//             : regularPrice;
+
+//         // Create a new product
+//         const newProduct = new Product({
+//             productName: products.productName,
+//             description: products.description,
+//             brand: products.brand,
+//             category: category._id,
+//             productImages: images,
+//             productOffer,
+//             highestOffer,
+//             productOfferAmount: highestOffer
+//                 ? (regularPrice * highestOffer) / 100
+//                 : 0,
+//             status: "available",
+//             variants,
+//         });
+
+//         console.log("New Product:", newProduct);
+
+//         await newProduct.save();
+//         return res.redirect("/admin/products");
+//     } catch (error) {
+//         console.error("Error saving product:", error.message);
+//         return res.status(500).json({ error: "An error occurred while saving the product." });
+//     }
+// };
+
+
+
+// const getAllProducts = async (req,res)=>{
+
+//     try {
+//         const search = req.query.search || "";
+//         const page = req.query.page || 1;
+//         const limit = 4;
+//         const productData = await Product.find({
+//             $or:[
+//                 {productName:{$regex:new RegExp(".*"+search+".*","i")}},
+//                 {brand:{$regex:new RegExp(".*"+search+".*","i")}},
+
+//             ],
+//         }).limit(limit*1).skip((page-1)*limit).populate('category').exec();
+
+//         console.log("------",productData)
+
+//         const count = await Product.find({
+//             $or:[
+//                 {productName:{$regex:new RegExp(".*"+search+".*","i")}},
+//                 {brand:{$regex:new RegExp(".*"+search+".*","i")}},
+
+//             ],
+//         }).countDocuments();
+
+// const category = await Category.find({isListed:true});
+// const brand = await Brand.find({isBlocked:false})
+
+// if(category && brand){
+// res.render("products",{
+//     data:productData,
+//     currentPage:page,
+//     totalPages:Math.ceil(count/limit),
+//     cat:category,
+//     brand:brand,
+// })
+
+// }else{
+//     res.render("page-404");
+// }
+
+//     } catch (error) {
+//         res.redirect("/pageerror");
+//     }
+
+
+// }
+
+
+const getAllProducts = async (req, res) => {
     try {
         const search = req.query.search || "";
         const page = req.query.page || 1;
         const limit = 4;
+
+        // Query for products matching search criteria
         const productData = await Product.find({
-            $or:[
-                {productName:{$regex:new RegExp(".*"+search+".*","i")}},
-                {brand:{$regex:new RegExp(".*"+search+".*","i")}},
-
+            $or: [
+                { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
+                { brand: { $regex: new RegExp(".*" + search + ".*", "i") } },
             ],
-        }).limit(limit*1).skip((page-1)*limit).populate('category').exec();
+        })
+            .limit(limit * 1)
+            .skip((page - 1) * limit)
+            .populate("category")
+            .exec();
 
+        // Count total products for pagination
         const count = await Product.find({
-            $or:[
-                {productName:{$regex:new RegExp(".*"+search+".*","i")}},
-                {brand:{$regex:new RegExp(".*"+search+".*","i")}},
-
+            $or: [
+                { productName: { $regex: new RegExp(".*" + search + ".*", "i") } },
+                { brand: { $regex: new RegExp(".*" + search + ".*", "i") } },
             ],
         }).countDocuments();
 
-const category = await Category.find({isListed:true});
-const brand = await Brand.find({isBlocked:false})
+        // Fetch categories and brands
+        const category = await Category.find({ isListed: true });
+        const brand = await Brand.find({ isBlocked: false });
 
-if(category && brand){
-res.render("products",{
-    data:productData,
-    currentPage:page,
-    totalPages:Math.ceil(count/limit),
-    cat:category,
-    brand:brand,
-})
+        // Process product data to include variant prices
+        const processedProducts = productData.map((product) => {
+            const variantsWithPrices = product.variants.map((variant) => ({
+                weight: variant.weight, 
+                type: variant.type,    
+                salePrice: variant.salePrice || 0, 
+                regularPrice: variant.regularPrice || 0, 
+                stock: variant.stock,
+                sku: variant.sku,
+            }));
 
-}else{
-    res.render("page-404");
-}
+            return {
+                ...product.toObject(),
+                variants: variantsWithPrices,
+            };
+        });
+    
+        const productOffer = parseFloat(productData.productOffer || 0);
 
+        // Get the highest category offer
+        const categoryOffer = category.map((cat) => cat.categoryOffer || 0);
+
+        const highestOffer = Math.max(productOffer, categoryOffer);
+        
+        if (category && brand) {
+            res.render("products", {
+                data: processedProducts,
+                currentPage: page,
+                totalPages: Math.ceil(count / limit),
+                cat: category,
+                brand: brand,
+                highestOffer
+            });
+        } else {
+            res.render("page-404");
+        }
     } catch (error) {
+        console.error("Error fetching products:", error);
         res.redirect("/pageerror");
     }
+};
 
-
-}
 
 const addProductOffer = async (req, res) => {
     try {
@@ -199,13 +407,25 @@ const addProductOffer = async (req, res) => {
             return res.status(400).json({ status: false, message: 'Invalid input' });
         }
 
-        const product = await Product.findById(productId);
+        const product = await Product.findById(productId).populate('category')
         if (!product) {
             return res.status(404).json({ status: false, message: 'Product not found' });
         }
+console.log("dhdh",product);
 
-        product.offer = parseFloat(percentage);
-        product.offerAmount =  (product.salePrice * percentage) / 100;
+        product.productOffer = parseFloat(percentage);
+
+let productOffer = product.productOffer
+
+        const categoryOffer = product.category.categoryOffer || 0; // Assume category.offer exists in your Category model
+        const highestOffer = Math.max(productOffer, categoryOffer);
+        product.highestOffer = highestOffer;
+
+        // Calculate sale price for the product
+        const regularPrice = parseFloat(product.regularPrice);
+        const salePrice = highestOffer
+            ? regularPrice - (regularPrice * highestOffer) / 100
+            : regularPrice;
 
         await product.save();
 
@@ -229,8 +449,8 @@ console.log("dhf",productId)
             return res.status(404).json({ status: false, message: 'Product not found' });
         }
 
-        product.offerAmount = 0;
-        product.offer = 0;
+       
+        product.productOffer = 0;
 
         await product.save();
 
@@ -321,13 +541,11 @@ const editProduct = async (req, res) => {
             return res.status(400).json({ error: "Invalid category ID" });
         }
 
-        
-
         // Validate and parse variants
         const variants = [];
         if (data.variants) {
             for (const variant of data.variants) {
-                const { categoryType, weight, type, price, stock, sku } = variant;
+                const { regularPrice,salePrice, categoryType, weight, type,stock, sku } = variant;
 
                 // Validate categoryType
                 if (!["strength", "cardio"].includes(categoryType)) {
@@ -338,7 +556,8 @@ const editProduct = async (req, res) => {
                 if (
                     (categoryType === "strength" && !weight) ||
                     (categoryType === "cardio" && !type) ||
-                    !price ||
+                    !regularPrice 
+                    || !salePrice||
                     !stock ||
                     !sku
                 ) {
@@ -350,17 +569,15 @@ const editProduct = async (req, res) => {
                 // Add to the variants array
                 variants.push({
                     categoryType,
-                    weight: categoryType === "strength" ? parseFloat(weight) : undefined,
-                    type: categoryType === "cardio" ? type : undefined,
-                    price: parseFloat(price),
-                    stock: parseInt(stock),
-                    sku,
+                    weight: categoryType === "strength" ? parseFloat(variant.weight) : undefined,
+                    type: categoryType === "cardio" ? variant.type : undefined,
+                    regularPrice: parseFloat(variant.regularPrice),
+                    salePrice:parseFloat(variant.salePrice),
+                    stock: parseInt(variant.stock, 10),
+                    sku: variant.sku.trim(),
                 });
             }
         }
-
-
-                   console.log("jdhkjhfihdhf",variants);
 
         // Process images if any
         const images = [];
@@ -370,17 +587,20 @@ const editProduct = async (req, res) => {
             }
         }
 
+         // Calculate highest offer
+         const productOffer = parseFloat(data.productOffer || 0);
+         const categoryOffer = category.categoryOffer || 0; 
+         const highestOffer = Math.max(productOffer, categoryOffer);
 
         //  update fields with explicit ObjectId casting for category
         const updateFields = {
             productName: data.productName,
             description: data.description,
             brand: data.brand,
-            regularPrice: parseFloat(data.regularPrice),
-            salePrice: parseFloat(data.salePrice),
-
-            ...(category && { category:  new mongoose.Types.ObjectId(category) }),
-            ...(variants.length > 0 && { variants }),
+            category:category._id,
+            status:'available',
+            variants,
+            highestOffer
         };
 
         // Update product in the database
